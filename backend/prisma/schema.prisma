@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model admins {
+  id_admin      String        @id @db.VarChar(11)
+  mail          String?       @unique(map: "uq_admins_mail") @db.VarChar(150)
+  password      String?
+  nom           String?       @db.VarChar(100)
+  prenom        String?       @db.VarChar(100)
+  grade         String?       @db.VarChar(50)
+  date_creation DateTime?     @db.Date
+  codes_promo   codes_promo[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model agences {
+  id_agence                                      String         @id @db.VarChar(11)
+  ville                                          String?        @db.VarChar(100)
+  nom                                            String?        @db.VarChar(100)
+  num_tel                                        String?        @db.VarChar(20)
+  mail                                           String?        @unique(map: "uq_agences_mail") @db.VarChar(150)
+  disponibilite_agence                           String?        @db.VarChar(50)
+  adresse                                        String?
+  url_image_agence                               String?
+  latitude                                       Decimal?       @db.Decimal
+  longitude                                      Decimal?       @db.Decimal
+  description                                    String?
+  is_active                                      Boolean?
+  date_dern_maj                                  DateTime?      @db.Date
+  date_creation                                  DateTime?      @db.Date
+  num_tel_deux                                   String?        @db.VarChar(20)
+  reservations_reservations_id_lieu_depToagences reservations[] @relation("reservations_id_lieu_depToagences")
+  reservations_reservations_id_lieu_retToagences reservations[] @relation("reservations_id_lieu_retToagences")
+  vehicules                                      vehicules[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model assurances {
+  id_assurance String         @id @db.VarChar(11)
+  nom          String?        @unique(map: "uq_assurances_nom") @db.VarChar(100)
+  description  String?
+  qualificatif String?        @db.VarChar(100)
+  avantages    String[]
+  prix_jour    Decimal?       @db.Decimal(10, 2)
+  reservations reservations[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model avis {
+  id_avis       String     @id @db.VarChar(11)
+  id_vehicule   String?    @db.VarChar(11)
+  id_client     String?    @db.VarChar(11)
+  rating        Int?
+  commentaire   String?
+  is_published  Boolean?
+  date_creation DateTime?  @db.Date
+  clients       clients?   @relation(fields: [id_client], references: [id_client], onDelete: NoAction, onUpdate: NoAction, map: "fk_avis_client")
+  vehicules     vehicules? @relation(fields: [id_vehicule], references: [id_vehicule], onDelete: NoAction, onUpdate: NoAction, map: "fk_avis_vehicule")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model clients {
+  id_client       String         @id @db.VarChar(11)
+  mail            String?        @unique(map: "uq_clients_mail") @db.VarChar(150)
+  password        String?
+  nom             String?        @db.VarChar(100)
+  prenom          String?        @db.VarChar(100)
+  date_naissance  DateTime?      @db.Date
+  pays            String?        @db.VarChar(100)
+  prefixe_tel     String?        @db.VarChar(10)
+  num_tel         String?        @db.VarChar(20)
+  statut_client   String?        @db.VarChar(50)
+  type_client     String?        @db.VarChar(50)
+  date_creation   DateTime?      @db.Date
+  language_favori String?        @db.VarChar(10)
+  date_dern_maj   DateTime?      @db.Date
+  banned          Boolean?       @default(false)
+  avis            avis[]
+  reservations    reservations[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model codes_promo {
+  id_coupon          String    @id @db.VarChar(11)
+  code               String?   @unique(map: "uq_codes_promo_code") @db.VarChar(50)
+  type_promo         String?   @db.VarChar(50)
+  valeur_promo       Decimal?  @db.Decimal
+  status             String?   @db.VarChar(50)
+  date_creation      DateTime? @db.Date
+  date_fin_validite  DateTime? @db.Date
+  id_admin_createur  String?   @db.VarChar(11)
+  nb_max_utilisation Int?
+  count_use          Int       @default(0)
+  admins             admins?   @relation(fields: [id_admin_createur], references: [id_admin], onDelete: NoAction, onUpdate: NoAction, map: "fk_coupon_admin")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model options {
+  id_option    String   @id @db.VarChar(11)
+  nom          String?  @unique(map: "uq_options_nom") @db.VarChar(100)
+  description  String?
+  qualificatif String?  @db.VarChar(100)
+  prix_jour    Decimal? @db.Decimal(10, 2)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model politiques_age {
+  id_politic_age String         @id @db.VarChar(11)
+  nom            String?        @unique(map: "uq_politiques_age_nom") @db.VarChar(100)
+  description    String?
+  qualificatif   String?        @db.VarChar(100)
+  prix_jour      Decimal?       @db.Decimal(10, 2)
+  reservations   reservations[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model reservations {
+  id_reservation                            String          @id @db.VarChar(11)
+  date_dep                                  DateTime?       @db.Date
+  date_ret                                  DateTime?       @db.Date
+  heure_dep                                 DateTime?       @db.Time(6)
+  heure_ret                                 DateTime?       @db.Time(6)
+  id_lieu_dep                               String?         @db.VarChar(11)
+  id_lieu_ret                               String?         @db.VarChar(11)
+  status                                    String?         @db.VarChar(50)
+  id_client                                 String?         @db.VarChar(11)
+  id_vehicule                               String?         @db.VarChar(11)
+  photo_dep                                 String?
+  photo_ret                                 String?
+  etat_dep                                  String?
+  etat_ret                                  String?
+  type_service                              String?         @db.VarChar(50)
+  type_conducteur                           String?         @db.VarChar(50)
+  code_promo                                String?         @db.VarChar(50)
+  nb_jour                                   Int?
+  devise                                    String?         @db.VarChar(10)
+  prix_initial                              Decimal?        @db.Decimal(10, 2)
+  prix_final                                Decimal?        @db.Decimal(10, 2)
+  date_creation                             DateTime?       @db.Date
+  date_dern_maj                             DateTime?       @db.Date
+  id_tarification                           String?         @db.VarChar(11)
+  id_assurance                              String?         @db.VarChar(11)
+  liste_id_option                           String[]
+  id_politic_age                            String?         @db.VarChar(11)
+  session_panier                            String?         @db.VarChar(100)
+  source_reservation                        String?         @db.VarChar(30)
+  etape_panier                              String?         @db.VarChar(50)
+  is_abandoned                              Boolean?        @default(false)
+  date_abandon                              DateTime?       @db.Timestamp(6)
+  date_derniere_activite                    DateTime?       @db.Timestamp(6)
+  payment_status                            String?         @db.VarChar(30)
+  payment_reference                         String?         @db.VarChar(100)
+  nom_snapshot                              String?         @db.VarChar(100)
+  prenom_snapshot                           String?         @db.VarChar(100)
+  mail_snapshot                             String?         @db.VarChar(150)
+  prefixe_tel_snapshot                      String?         @db.VarChar(10)
+  num_tel_snapshot                          String?         @db.VarChar(20)
+  assurances                                assurances?     @relation(fields: [id_assurance], references: [id_assurance], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_assurance")
+  clients                                   clients?        @relation(fields: [id_client], references: [id_client], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_client")
+  agences_reservations_id_lieu_depToagences agences?        @relation("reservations_id_lieu_depToagences", fields: [id_lieu_dep], references: [id_agence], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_lieu_dep")
+  agences_reservations_id_lieu_retToagences agences?        @relation("reservations_id_lieu_retToagences", fields: [id_lieu_ret], references: [id_agence], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_lieu_ret")
+  politiques_age                            politiques_age? @relation(fields: [id_politic_age], references: [id_politic_age], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_politique_age")
+  tarifications                             tarifications?  @relation(fields: [id_tarification], references: [id_tarification], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_tarification")
+  vehicules                                 vehicules?      @relation(fields: [id_vehicule], references: [id_vehicule], onDelete: NoAction, onUpdate: NoAction, map: "fk_reservation_vehicule")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model tarifications {
+  id_tarification String         @id @db.VarChar(11)
+  nom             String?        @unique(map: "uq_tarifications_nom") @db.VarChar(100)
+  description     String?
+  qualificatif    String?        @db.VarChar(100)
+  avantages       String[]
+  discount_rate   Decimal?       @db.Decimal(10, 2)
+  reservations    reservations[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model vehicules {
+  id_vehicule        String         @id @db.VarChar(11)
+  nom                String?        @db.VarChar(150)
+  categorie          String?        @db.VarChar(50)
+  transmission       String?        @db.VarChar(50)
+  prix_jour          Decimal?       @db.Decimal(10, 2)
+  carburant          String?        @db.VarChar(50)
+  nb_place           Int?
+  nb_porte           Int?
+  climatisation      Boolean?
+  disponibilite      String?        @db.VarChar(50)
+  model              String?        @db.VarChar(100)
+  marque             String?        @db.VarChar(100)
+  status_vehicule    String?        @db.VarChar(50)
+  id_agence_actuelle String?        @db.VarChar(11)
+  url_image_vehicule String?
+  capacite_coffre    Decimal?       @db.Decimal
+  description        String?
+  date_creation      DateTime?      @db.Date
+  date_dern_maj      DateTime?      @db.Date
+  avis               avis[]
+  reservations       reservations[]
+  agences            agences?       @relation(fields: [id_agence_actuelle], references: [id_agence], onDelete: NoAction, onUpdate: NoAction, map: "fk_vehicule_agence")
+}
+
+model logs_connexion {
+  id_log_connexion String   @id @db.VarChar(11)
+  id_client        String?  @db.VarChar(11)
+  date_connexion   DateTime @db.Timestamp(6)
+  ip_connexion     String?  @db.VarChar(100)
+  pays_connexion   String?  @db.VarChar(100)
+  ville_connexion  String?  @db.VarChar(100)
+
+  @@index([date_connexion], map: "idx_logs_connexion_date_connexion")
+  @@index([id_client], map: "idx_logs_connexion_id_client")
+}

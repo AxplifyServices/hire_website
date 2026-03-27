@@ -1,0 +1,10 @@
+BEGIN;
+
+ALTER TABLE codes_promo
+ADD COLUMN IF NOT EXISTS count_use INTEGER NOT NULL DEFAULT 0;
+
+UPDATE codes_promo
+SET count_use = 0
+WHERE count_use IS NULL;
+
+COMMIT;
