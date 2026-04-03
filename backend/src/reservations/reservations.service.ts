@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -217,22 +216,6 @@ export class ReservationsService {
         'Le panier n’est pas complet pour être finalisé.',
       );
     }
-
-    const start = this.combineDateAndTime(
-      reservation.date_dep,
-      this.normalizeTimeValue(reservation.heure_dep),
-    );
-    const end = this.combineDateAndTime(
-      reservation.date_ret,
-      this.normalizeTimeValue(reservation.heure_ret),
-    );
-
-    await this.assertVehiculeStillAvailableExcludingReservation(
-      reservation.id_vehicule,
-      start,
-      end,
-      reservation.id_reservation,
-    );
 
     const quote = await this.computeQuote({
       id_vehicule: reservation.id_vehicule,
@@ -508,8 +491,6 @@ export class ReservationsService {
       };
     }
 
-    await this.assertVehiculeStillAvailable(dto.id_vehicule, start, end);
-
     const reservation = await this.prisma.reservations.create({
       data: {
         id_reservation: this.generateReservationId(),
@@ -753,48 +734,6 @@ export class ReservationsService {
     return age;
   }
 
-  private async assertVehiculeStillAvailable(
-    id_vehicule: string,
-    requestedStart: Date,
-    requestedEnd: Date,
-  ) {
-    const reservations = await this.prisma.reservations.findMany({
-      where: {
-        id_vehicule,
-        status: {
-          in: ['VALIDEE', 'EN_ATTENTE_PAIEMENT'],
-        },
-      },
-      select: {
-        id_reservation: true,
-        date_dep: true,
-        date_ret: true,
-        heure_dep: true,
-        heure_ret: true,
-      },
-    });
-
-    for (const reservation of reservations) {
-      const existingStart = this.combineDateAndTime(
-        reservation.date_dep!,
-        this.normalizeTimeValue(reservation.heure_dep),
-      );
-
-      const existingEnd = this.combineDateAndTime(
-        reservation.date_ret!,
-        this.normalizeTimeValue(reservation.heure_ret),
-      );
-
-      const overlaps =
-        existingStart < requestedEnd && existingEnd > requestedStart;
-
-      if (overlaps) {
-        throw new ConflictException(
-          'Ce véhicule n’est plus disponible sur la période sélectionnée.',
-        );
-      }
-    }
-  }
 
   private async computeQuote(input: {
     id_vehicule: string;
@@ -1024,53 +963,6 @@ export class ReservationsService {
 
   private generateCartSession() {
     return `cart_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-  }
-
-  private async assertVehiculeStillAvailableExcludingReservation(
-    id_vehicule: string,
-    requestedStart: Date,
-    requestedEnd: Date,
-    reservationIdToExclude: string,
-  ) {
-    const reservations = await this.prisma.reservations.findMany({
-      where: {
-        id_vehicule,
-        status: {
-          in: ['VALIDEE', 'EN_ATTENTE_PAIEMENT'],
-        },
-        id_reservation: {
-          not: reservationIdToExclude,
-        },
-      },
-      select: {
-        id_reservation: true,
-        date_dep: true,
-        date_ret: true,
-        heure_dep: true,
-        heure_ret: true,
-      },
-    });
-
-    for (const reservation of reservations) {
-      const existingStart = this.combineDateAndTime(
-        reservation.date_dep!,
-        this.normalizeTimeValue(reservation.heure_dep),
-      );
-
-      const existingEnd = this.combineDateAndTime(
-        reservation.date_ret!,
-        this.normalizeTimeValue(reservation.heure_ret),
-      );
-
-      const overlaps =
-        existingStart < requestedEnd && existingEnd > requestedStart;
-
-      if (overlaps) {
-        throw new ConflictException(
-          'Ce véhicule n’est plus disponible sur la période sélectionnée.',
-        );
-      }
-    }
   }
   
   async resumeCart(id: string, user: any, session_panier?: string) {

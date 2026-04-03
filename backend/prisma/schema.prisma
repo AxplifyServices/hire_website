@@ -36,6 +36,7 @@ model agences {
   date_dern_maj                                  DateTime?      @db.Date
   date_creation                                  DateTime?      @db.Date
   num_tel_deux                                   String?        @db.VarChar(20)
+  categorie                                      String         @default("Ville") @db.VarChar(50)
   reservations_reservations_id_lieu_depToagences reservations[] @relation("reservations_id_lieu_depToagences")
   reservations_reservations_id_lieu_retToagences reservations[] @relation("reservations_id_lieu_retToagences")
   vehicules                                      vehicules[]

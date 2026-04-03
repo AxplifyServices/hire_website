@@ -1,0 +1,17 @@
+Frontend Next.js basé sur l'architecture souhaitée.
+
+Ce qui est branché :
+- agences -> GET /agences
+- flotte catalogue -> GET /vehicules
+- flotte disponibilité -> GET /vehicules/search
+- auth -> POST /auth/login, POST /auth/register, GET /auth/me
+- compte -> GET /reservations/me
+- lookup réservation -> GET /reservations/:id
+
+Ce qui n'a volontairement pas été créé :
+- tunnel de réservation complet dépendant de politiques-age non exposées publiquement
+- pages historiques de la maquette qui reposaient sur des endpoints mock /api/* non présents dans le back-end actuel
+
+Commandes :
+- npm install
+- npm run dev

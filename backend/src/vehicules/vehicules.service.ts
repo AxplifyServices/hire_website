@@ -164,17 +164,9 @@ export class VehiculesService {
 
   const vehicules = await this.prisma.vehicules.findMany({
     where: {
-      id_agence_actuelle: dto.id_agence_depart,
-      reservations: {
-        none: {
-          status: 'Valide',
-          date_dep: {
-            lt: end,
-          },
-          date_ret: {
-            gt: start,
-          },
-        },
+      status_vehicule: {
+        equals: 'Actif',
+        mode: 'insensitive',
       },
     },
     orderBy: {
