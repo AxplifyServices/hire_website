@@ -12,6 +12,10 @@ import { ReservationsModule } from './reservations/reservations.module';
 import { AuthModule } from './auth/auth.module';
 import { CodesPromoModule } from './codes-promo/codes-promo.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EntreprisesModule } from './entreprises/entreprises.module';
+import { CollaborateursModule } from './collaborateurs/collaborateurs.module';
+import { B2bCoreModule } from './b2b-core/b2b-core.module';
+import { B2bReservationsModule } from './b2b-reservations/b2b-reservations.module';
 
 @Module({
   imports: [
@@ -27,6 +31,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     TarificationsModule,
     ReservationsModule,
     CodesPromoModule,
+    EntreprisesModule,
+    CollaborateursModule,
+    B2bCoreModule,
+    B2bReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

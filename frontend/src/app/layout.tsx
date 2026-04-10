@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import AgentationProvider from '@/components/dev/AgentationProvider';
+import 'leaflet/dist/leaflet.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hire-automotive.local'),

@@ -30,7 +30,8 @@ export default function Header() {
       {href: `/${locale}/flotte`, label: t('fleet')},
       {href: `/${locale}/agences`, label: t('agencies')},
       {href: `/${locale}/gestion-reservation`, label: t('manageReservation')},
-      {href: `/${locale}/compte`, label: t('account')}
+      {href: `/${locale}/compte`, label: t('account')},
+      {href: `/${locale}/b2b`, label: t('b2b')},
     ],
     [locale, t]
   );

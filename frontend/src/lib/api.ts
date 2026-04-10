@@ -1,5 +1,11 @@
 import type {
   Agency,
+  B2BContextResponse,
+  B2BQuotePayload,
+  B2BQuoteResponse,
+  B2BReservationsResponse,
+  B2BValidationsResponse,
+  CreateB2BReservationPayload,
   CreateCartPayload,
   CreateCartResponse,
   QuotePayload,
@@ -10,7 +16,11 @@ import type {
   UpdateReservationResponse,
   Vehicle,
   VehiclesListResponse,
-  FinalizeCartResponse
+  FinalizeCartResponse,
+  Assurance,
+  B2BCentreCout,
+  B2BCollaborateur,
+  B2BProfilBeneficiaire,
 } from '@/lib/types';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:3000';
@@ -220,4 +230,131 @@ export async function finalizeReservationCart(
       sessionId: options?.sessionId || undefined
     }
   );
+}
+
+export async function fetchCollaborateurContext(token: string) {
+  return await fetchBrowserApi<B2BContextResponse>('/collaborateurs/me/context', {
+    headers: {Authorization: `Bearer ${token}`}
+  });
+}
+
+export async function fetchCollaborateurEntreprises(token: string) {
+  return await fetchBrowserApi<B2BContextResponse['memberships']>(
+    '/collaborateurs/me/entreprises',
+    {
+      headers: {Authorization: `Bearer ${token}`}
+    }
+  );
+}
+
+export async function fetchEntrepriseCentresCout(
+  idEntreprise: string,
+  token: string
+) {
+  return await fetchBrowserApi<B2BCentreCout[]>(
+    `/entreprises/${idEntreprise}/centres-cout`,
+    {
+      headers: {Authorization: `Bearer ${token}`}
+    }
+  );
+}
+
+export async function fetchEntrepriseProfilsBeneficiaires(
+  idEntreprise: string,
+  token: string
+) {
+  return await fetchBrowserApi<B2BProfilBeneficiaire[]>(
+    `/entreprises/${idEntreprise}/profils-beneficiaires`,
+    {
+      headers: {Authorization: `Bearer ${token}`}
+    }
+  );
+}
+
+export async function fetchEntrepriseCollaborateurs(
+  idEntreprise: string,
+  token: string
+) {
+  return await fetchBrowserApi<B2BCollaborateur[]>(
+    `/entreprises/${idEntreprise}/collaborateurs`,
+    {
+      headers: {Authorization: `Bearer ${token}`}
+    }
+  );
+}
+
+export async function getB2bQuote(payload: B2BQuotePayload, token: string) {
+  return await fetchBrowserApi<B2BQuoteResponse>('/b2b-reservations/quote', {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${token}`},
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function createB2bReservation(
+  payload: CreateB2BReservationPayload,
+  token: string
+) {
+  return await fetchBrowserApi<{
+    message: string;
+    reservation: any;
+    validation?: any;
+  }>('/b2b-reservations', {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${token}`},
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function fetchMyB2bReservations(
+  token: string,
+  params?: {
+    statut_reservation?: string;
+    statut_validation?: string;
+    id_entreprise?: string;
+    sort_date_creation?: 'asc' | 'desc';
+  }
+) {
+  const response = await fetch(buildApiUrl('/b2b-reservations/me', params), {
+    cache: 'no-store',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  return parseResponse<B2BReservationsResponse>(response);
+}
+
+export async function fetchMyPendingValidations(token: string) {
+  return await fetchBrowserApi<B2BValidationsResponse>('/b2b-validations/me', {
+    headers: {Authorization: `Bearer ${token}`}
+  });
+}
+
+export async function approveB2bValidation(
+  id: string,
+  token: string,
+  commentaire?: string
+) {
+  return await fetchBrowserApi<{message: string}>(`/b2b-validations/${id}/approve`, {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${token}`},
+    body: JSON.stringify({
+      commentaire: commentaire || ''
+    })
+  });
+}
+
+export async function rejectB2bValidation(
+  id: string,
+  token: string,
+  commentaire?: string
+) {
+  return await fetchBrowserApi<{message: string}>(`/b2b-validations/${id}/reject`, {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${token}`},
+    body: JSON.stringify({
+      commentaire: commentaire || ''
+    })
+  });
 }

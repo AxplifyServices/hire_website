@@ -226,3 +226,263 @@ export type FinalizeCartResponse = {
   reservation: ReservationRecord;
   quote: QuoteResponse;
 };
+
+export type B2BEntreprise = {
+  id_entreprise: string;
+  raison_sociale: string | null;
+  slug: string | null;
+  statut: string | null;
+  devise: string | null;
+  mode_validation_defaut: string | null;
+};
+
+export type B2BCentreCout = {
+  id_centre_cout: string;
+  code: string | null;
+  libelle: string | null;
+};
+
+export type B2BProfilBeneficiaire = {
+  id_profil_beneficiaire: string;
+  code: string | null;
+  libelle: string | null;
+  description: string | null;
+  validation_requise: boolean | null;
+  budget_plafond_mensuel: number | null;
+  nb_jours_mois: number | null;
+  nb_reservations_simultanees: number | null;
+  avec_chauffeur_autorise: boolean | null;
+  sans_chauffeur_autorise: boolean | null;
+  actif: boolean | null;
+};
+
+export type B2BMembership = {
+  id_client_entreprise: string;
+  id_client: string;
+  id_entreprise: string;
+  id_centre_cout: string | null;
+  id_profil_beneficiaire: string | null;
+  manager_id_client_entreprise: string | null;
+  role_entreprise: string | null;
+  matricule: string | null;
+  actif: boolean;
+  date_creation: string | null;
+  date_dern_maj: string | null;
+  entreprises: B2BEntreprise | null;
+  centres_cout: B2BCentreCout | null;
+  profils_beneficiaires: B2BProfilBeneficiaire | null;
+};
+
+export type B2BContextResponse = {
+  user: {
+    id_client: string;
+    mail: string;
+    nom: string | null;
+    prenom: string | null;
+    role: string | null;
+    type_client: string | null;
+  };
+  is_b2b: boolean;
+  memberships: B2BMembership[];
+  default_membership: B2BMembership | null;
+};
+
+export type B2BQuotePayload = {
+  id_client_entreprise_demandeur: string;
+  id_client_entreprise_beneficiaire?: string;
+  id_centre_cout?: string;
+  id_profil_beneficiaire?: string;
+  id_vehicule: string;
+  id_agence_depart: string;
+  id_agence_retour?: string;
+  type_lieu_depart?: 'agence' | 'localisation';
+  adresse_depart?: string;
+  latitude_depart?: number;
+  longitude_depart?: number;
+  type_lieu_retour?: 'agence' | 'localisation';
+  adresse_retour?: string;
+  latitude_retour?: number;
+  longitude_retour?: number;
+  date_dep: string;
+  date_ret: string;
+  heure_dep: string;
+  heure_ret: string;
+  avec_chauffeur?: boolean;
+  type_trajet?: string;
+  lieu_prise_en_charge?: string;
+  lieu_destination?: string;
+  id_tarification?: string;
+  id_assurance?: string;
+};
+
+export type B2BQuoteResponse = {
+  allowed: boolean;
+  requires_validation: boolean;
+  errors: unknown[];
+  warnings: unknown[];
+  prix_estime: number | null;
+  quota_consomme: {
+    jours: number | null;
+    budget: number | null;
+  };
+  quota_status: string | Record<string, unknown> | null;
+};
+
+export type CreateB2BReservationPayload = {
+  id_client_entreprise_demandeur: string;
+  id_client_entreprise_beneficiaire?: string;
+  id_centre_cout?: string;
+  id_profil_beneficiaire?: string;
+  id_vehicule: string;
+  id_agence_depart: string;
+  id_agence_retour?: string;
+  type_lieu_depart?: 'agence' | 'localisation';
+  adresse_depart?: string;
+  latitude_depart?: number;
+  longitude_depart?: number;
+  type_lieu_retour?: 'agence' | 'localisation';
+  adresse_retour?: string;
+  latitude_retour?: number;
+  longitude_retour?: number;
+  retour_different?: boolean;
+  date_dep: string;
+  date_ret: string;
+  heure_dep: string;
+  heure_ret: string;
+  avec_chauffeur?: boolean;
+  type_trajet?: string;
+  lieu_prise_en_charge?: string;
+  lieu_destination?: string;
+  nb_passagers?: number;
+  instructions_specifiques?: string;
+  reserve_pour_tiers?: boolean;
+  id_tarification?: string;
+  id_assurance?: string;
+};
+
+export type B2BValidationRecord = {
+  id_demande_validation: string;
+  id_reservation_entreprise: string;
+  id_client_entreprise_demandeur: string;
+  id_client_entreprise_valideur: string | null;
+  statut: string | null;
+  commentaire_demande: string | null;
+  commentaire_validation: string | null;
+  date_creation: string | null;
+  date_decision: string | null;
+  has_assigned_validator?: boolean;
+  demandeur?: {
+    id_client_entreprise: string;
+    clients?: {
+      id_client: string;
+      nom: string | null;
+      prenom: string | null;
+      mail: string | null;
+    } | null;
+  } | null;
+  valideur?: {
+    id_client_entreprise: string;
+    clients?: {
+      id_client: string;
+      nom: string | null;
+      prenom: string | null;
+      mail: string | null;
+    } | null;
+  } | null;
+  reservations_entreprises?: B2BReservationRecord | null;
+};
+
+export type B2BReservationRecord = {
+  id_reservation_entreprise: string;
+  id_client_entreprise_demandeur: string;
+  id_client_entreprise_beneficiaire: string | null;
+  id_entreprise: string;
+  id_centre_cout: string | null;
+  id_profil_beneficiaire: string | null;
+  id_vehicule: string;
+  id_agence_depart: string;
+  id_agence_retour: string | null;
+  type_lieu_depart: string | null;
+  adresse_depart: string | null;
+  latitude_depart: number | null;
+  longitude_depart: number | null;
+  type_lieu_retour: string | null;
+  adresse_retour: string | null;
+  latitude_retour: number | null;
+  longitude_retour: number | null;
+  date_dep: string | null;
+  date_ret: string | null;
+  heure_dep: string | null;
+  heure_ret: string | null;
+  avec_chauffeur: boolean | null;
+  type_trajet: string | null;
+  lieu_prise_en_charge: string | null;
+  lieu_destination: string | null;
+  nb_passagers: number | null;
+  instructions_specifiques: string | null;
+  reserve_pour_tiers: boolean | null;
+  statut_reservation: string | null;
+  statut_validation: string | null;
+  prix_estime: number | null;
+  prix_final: number | null;
+  devise: string | null;
+  date_creation: string | null;
+  date_dern_maj: string | null;
+  vehicules?: Vehicle | null;
+  entreprises?: B2BEntreprise | null;
+  centres_cout?: B2BCentreCout | null;
+  profils_beneficiaires?: B2BProfilBeneficiaire | null;
+  demandes_validation?: B2BValidationRecord[];
+  is_demandeur?: boolean;
+  is_beneficiaire?: boolean;
+  has_pending_validation?: boolean;
+  validation_count?: number;
+  latest_validation_status?: string | null;
+};
+
+export type B2BCollaborateur = {
+  id_client_entreprise: string;
+  id_client: string;
+  id_entreprise: string;
+  id_centre_cout: string | null;
+  id_profil_beneficiaire: string | null;
+  manager_id_client_entreprise: string | null;
+  role_entreprise: string | null;
+  matricule: string | null;
+  actif: boolean;
+  date_creation: string | null;
+  date_dern_maj: string | null;
+  clients: {
+    id_client: string;
+    nom: string | null;
+    prenom: string | null;
+    mail: string | null;
+  } | null;
+  centres_cout: B2BCentreCout | null;
+  profils_beneficiaires: B2BProfilBeneficiaire | null;
+};
+
+export type B2BReservationsResponse = {
+  data: B2BReservationRecord[];
+  meta: {
+    total: number;
+    memberships_count: number;
+  };
+};
+
+export type B2BValidationsResponse = {
+  data: B2BValidationRecord[];
+  meta: {
+    total: number;
+    memberships_count: number;
+  };
+};
+
+export type Assurance = {
+  id_assurance: string;
+  nom: string;
+  description: string;
+  qualificatif: string;
+  avantages: string[];
+  prix_jour: number | null;
+};

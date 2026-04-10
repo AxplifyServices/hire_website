@@ -1,0 +1,2 @@
+ALTER TABLE clients_entreprises
+DROP CONSTRAINT chk_role_entreprise;

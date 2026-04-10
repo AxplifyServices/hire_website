@@ -179,6 +179,7 @@ export default function AccountOverview({locale}: {locale: string}) {
         <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
             <h2 className="text-lg font-semibold text-white">{t('profile')}</h2>
+
             <div className="mt-4 space-y-2 text-sm text-white/70">
               <p>
                 <span className="text-white">{t('fullName')}:</span>{' '}
@@ -194,6 +195,15 @@ export default function AccountOverview({locale}: {locale: string}) {
                 <span className="text-white">{t('phone')}:</span>{' '}
                 {[client.prefixe_tel, client.num_tel].filter(Boolean).join(' ') || '—'}
               </p>
+            </div>
+
+            <div className="mt-5">
+              <Link
+                href={`/${locale}/b2b`}
+                className="inline-flex rounded-full border border-gold/40 px-4 py-2 text-sm font-semibold text-gold transition hover:bg-gold hover:text-brand-950"
+              >
+                {t('openB2B')}
+              </Link>
             </div>
           </div>
 
