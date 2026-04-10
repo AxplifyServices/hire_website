@@ -20,6 +20,6 @@ export async function generateMetadata({
   };
 }
 
-export default function GestionReservationPage() {
-  return <ReservationLookup />;
+export default function GestionReservationPage({ params }: { params: { locale: string } }) {
+  return <ReservationLookup locale={params.locale} />;
 }
