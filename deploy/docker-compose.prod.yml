@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  hire-backend:
+    image: ghcr.io/AxplifyServices/hire-backend:latest
+    container_name: hire-backend
+    restart: unless-stopped
+    env_file:
+      - /opt/hire/backend.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hire-backend.rule=Host(`api.hire-automotive.axplitest.com`)"
+      - "traefik.http.routers.hire-backend.entrypoints=websecure"
+      - "traefik.http.routers.hire-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hire-backend.loadbalancer.server.port=3000"
+
+  hire-frontend:
+    image: ghcr.io/AxplifyServices/hire-frontend:latest
+    container_name: hire-frontend
+    restart: unless-stopped
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hire-frontend.rule=Host(`hire-automotive.axplitest.com`)"
+      - "traefik.http.routers.hire-frontend.entrypoints=websecure"
+      - "traefik.http.routers.hire-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hire-frontend.loadbalancer.server.port=3000"
+
+networks:
+  traefik-public:
+    external: true
