@@ -5,15 +5,21 @@ services:
     build:
       context: ./repo/backend
     container_name: hire-backend
-    restart: unless-stopped
+    restart: "no"
     env_file:
       - /opt/apps/hire/backend.env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
-      - traefik-public
+      - web
+    command: >
+      sh -lc "
+      echo DATABASE_URL=$DATABASE_URL &&
+      node -e 'const { PrismaClient } = require(\"@prisma/client\"); const prisma = new PrismaClient(); prisma.$connect().then(()=>{console.log(\"PRISMA_OK\")}).catch(e=>{console.error(\"PRISMA_ERR\"); console.error(e); process.exit(1)})'
+      "
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=web"
       - "traefik.http.routers.hire-backend.rule=Host(`api.hire-automotive.axplitest.com`)"
       - "traefik.http.routers.hire-backend.entrypoints=websecure"
       - "traefik.http.routers.hire-backend.tls.certresolver=letsencrypt"
