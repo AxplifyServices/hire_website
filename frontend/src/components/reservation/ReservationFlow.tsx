@@ -465,7 +465,8 @@ export default function ReservationFlow({
             ? String(createdCart.reservation.heure_ret).slice(11, 16)
             : DEFAULT_RETURN_TIME,
           id_politique_age:
-            createdCart.reservation.id_politique_age ||
+            (createdCart.reservation as any).id_politique_age ||
+              createdCart.reservation.id_politic_age ||
             prefillAgePolicyId ||
             DEFAULT_AGE_POLICY_ID,
           code_promo: createdCart.reservation.code_promo || ''
