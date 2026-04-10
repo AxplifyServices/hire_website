@@ -19,9 +19,6 @@ services:
       - "traefik.http.routers.hire-backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.hire-backend.loadbalancer.server.port=3000"
 
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
   hire-frontend:
     build:
       context: ./repo/frontend
