@@ -2,11 +2,12 @@ version: "3.9"
 
 services:
   hire-backend:
-    image: ghcr.io/AxplifyServices/hire-backend:latest
+    build:
+      context: ./repo/backend
     container_name: hire-backend
     restart: unless-stopped
     env_file:
-      - /opt/hire/backend.env
+      - /opt/apps/hire/backend.env
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -19,7 +20,10 @@ services:
       - "traefik.http.services.hire-backend.loadbalancer.server.port=3000"
 
   hire-frontend:
-    image: ghcr.io/AxplifyServices/hire-frontend:latest
+    build:
+      context: ./repo/frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://api.hire-automotive.axplitest.com
     container_name: hire-frontend
     restart: unless-stopped
     networks:
