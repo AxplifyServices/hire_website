@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-jobs:           
+jobs:
   deploy:
     runs-on: ubuntu-latest
 
@@ -17,9 +17,15 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
+            set -e
+
             cd /opt/apps/hire/repo
             git fetch origin
             git reset --hard origin/main
 
             cd /opt/apps/hire
-            docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d --build --force-recreate --remove-orphans
+
+            docker ps
+            docker logs hire-backend --tail 100
