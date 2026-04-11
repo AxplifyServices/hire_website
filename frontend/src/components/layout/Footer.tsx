@@ -25,12 +25,12 @@ export default async function Footer() {
     {key: 'navHome', href: '', icon: Landmark},
     {key: 'navFleet', href: '/flotte', icon: CarFront},
     {key: 'navAgencies', href: '/agences', icon: MapPin},
-    {key: 'navAccount', href: '/compte', icon: UserCircle2}
+    {key: 'navAccount', href: '/b2b', icon: UserCircle2}
   ];
 
   const serviceLinks = [
-    {key: 'manageBooking', href: '/gestion-reservation', icon: Search},
-    {key: 'account', href: '/compte', icon: UserCircle2},
+    {key: 'manageBooking', href: '/news', icon: Search},
+    {key: 'account', href: '/b2b', icon: UserCircle2},
     {key: 'navFleet', href: '/flotte', icon: CarFront},
     {key: 'navAgencies', href: '/agences', icon: MapPin}
   ];
@@ -76,7 +76,7 @@ export default async function Footer() {
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href={withLocale(locale, '/compte')}
+                href={withLocale(locale, '/b2b')}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-white transition hover:border-gold/40 hover:bg-white/10"
               >
                 <UserCircle2 className="h-4 w-4 text-gold" />
@@ -84,7 +84,7 @@ export default async function Footer() {
               </Link>
 
               <Link
-                href={withLocale(locale, '/gestion-reservation')}
+                href={withLocale(locale, '/news')}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-white transition hover:border-gold/40 hover:bg-white/10"
               >
                 <Search className="h-4 w-4 text-gold" />

@@ -1,0 +1,50 @@
+serv :ssh ubuntu@51.75.252.139
+Code serveur : zitanezac
+
+cd OneDrive\Bureau\hire-automotive-local\webapp
+
+** Lancer le code 
+
+Code .
+
+** PostgreSQL
+
+psql -U postgres
+\c hire_db     // Utiliser une base de données
+\q
+
+// Execution d'un script 
+
+psql -U postgres -d hire_db -f "database\schema\2026-04-11_seed_news.sql"
+
+** Installer un env
+
+npm install  
+c
+** Lancer l'appli
+
+npm run dev
+
+** Lancer serveur backend Nest
+
+cd OneDrive\Bureau\hire-automotive-local\webapp\backend
+npm run start:dev
+
+** Lancer serveur frontend Next
+
+cd OneDrive\Bureau\hire-automotive-local\webapp\frontend
+npm run dev
+
+Pour Git :
+
+git status
+
+git add .
+git commit -m "message clair"
+git push origin main
+
+git commit --allow-empty -m "trigger deploy"
+
+MDP PostgreSQL serveur :
+
+22072001Zak

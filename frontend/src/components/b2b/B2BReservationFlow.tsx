@@ -286,34 +286,62 @@ type QuotaSummary = {
   reservations_simultanees_restantes: number | null;
 };
 
+function parseNullableNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+
+  if (typeof value === 'number') {
+    return Number.isNaN(value) ? null : value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.replace(',', '.').trim();
+    if (!normalized) return null;
+
+    const parsed = Number(normalized);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  return null;
+}
+
+function parseQuotaSource(value: unknown): Record<string, unknown> | null {
+  if (isPlainObject(value)) return value;
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      return isPlainObject(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
 function parseQuotaSummary(value: unknown): QuotaSummary | null {
-  if (!isPlainObject(value)) return null;
+  const parsedValue = parseQuotaSource(value);
+  if (!parsedValue) return null;
 
   return {
-    jours_alloues:
-      typeof value.jours_alloues === 'number' ? value.jours_alloues : null,
-    jours_utilises:
-      typeof value.jours_utilises === 'number' ? value.jours_utilises : null,
-    jours_restants:
-      typeof value.jours_restants === 'number' ? value.jours_restants : null,
-    budget_alloue:
-      typeof value.budget_alloue === 'number' ? value.budget_alloue : null,
-    budget_utilise:
-      typeof value.budget_utilise === 'number' ? value.budget_utilise : null,
-    budget_restant:
-      typeof value.budget_restant === 'number' ? value.budget_restant : null,
-    reservations_max_simultanees:
-      typeof value.reservations_max_simultanees === 'number'
-        ? value.reservations_max_simultanees
-        : null,
-    reservations_simultanees_utilisees:
-      typeof value.reservations_simultanees_utilisees === 'number'
-        ? value.reservations_simultanees_utilisees
-        : null,
-    reservations_simultanees_restantes:
-      typeof value.reservations_simultanees_restantes === 'number'
-        ? value.reservations_simultanees_restantes
-        : null
+    jours_alloues: parseNullableNumber(parsedValue.jours_alloues),
+    jours_utilises: parseNullableNumber(parsedValue.jours_utilises),
+    jours_restants: parseNullableNumber(parsedValue.jours_restants),
+    budget_alloue: parseNullableNumber(parsedValue.budget_alloue),
+    budget_utilise: parseNullableNumber(parsedValue.budget_utilise),
+    budget_restant: parseNullableNumber(parsedValue.budget_restant),
+    reservations_max_simultanees: parseNullableNumber(
+      parsedValue.reservations_max_simultanees
+    ),
+    reservations_simultanees_utilisees: parseNullableNumber(
+      parsedValue.reservations_simultanees_utilisees
+    ),
+    reservations_simultanees_restantes: parseNullableNumber(
+      parsedValue.reservations_simultanees_restantes
+    )
   };
 }
 
@@ -694,10 +722,17 @@ export default function B2BReservationFlow({
   const selectedVehicle =
     vehicles.find((vehicle) => vehicle.id_vehicule === selectedVehicleId) || null;
 
-  const quotaSummary = useMemo(
-    () => parseQuotaSummary(quote?.quota_status),
-    [quote?.quota_status]
-  );
+  const quotaSummary = useMemo(() => {
+    return (
+      parseQuotaSummary(quote?.quota_status) ??
+      parseQuotaSummary(selectedBeneficiary?.role_entreprise) ??
+      parseQuotaSummary(defaultMembership?.role_entreprise)
+    );
+  }, [
+    quote?.quota_status,
+    selectedBeneficiary?.role_entreprise,
+    defaultMembership?.role_entreprise
+  ]);
 
   const remainingBudgetDisplay = useMemo(() => {
     if (!quote) return '—';
@@ -914,7 +949,6 @@ export default function B2BReservationFlow({
 
       setQuote(response);
       setStep('recap');
-      window.scrollTo({top: 0, behavior: 'smooth'});
     } catch (err) {
       setQuoteError(err instanceof Error ? err.message : t('genericError'));
       setStep('form');

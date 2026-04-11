@@ -35,10 +35,18 @@
     "lookup": {
       "title": "Gestion de réservation",
       "description": "Consultation d'une réservation par identifiant avec les endpoints déjà exposés."
-    }
+    },
+
+    "news": {
+  "title": "News & actualités des agences | Hire Automotive Group",
+  "description": "Consultez les actualités des agences Hire Automotive Group, filtrez par agence et retrouvez les informations locales importantes."
+}
   },
+
+  
   "Nav": {
     "home": "Accueil",
+    "news": "News",
     "fleet": "Notre flotte",
     "agencies": "Agences",
     "manageReservation": "Gestion de réservation",
@@ -264,13 +272,40 @@
     }
   },
   "AgenciesPage": {
-    "kicker": "API agences",
-    "title": "Nos agences",
-    "subtitle": "Cette page est branchée directement sur l'endpoint /agences existant, sans adaptation back-end supplémentaire.",
+    "kicker": "Réseau d'agences",
+    "title": "Nos agences au Maroc",
+    "subtitle": "Explorez notre réseau premium, basculez entre les agences en ville et les agences aéroport, puis accédez directement aux news locales de chaque agence.",
+    "cityTab": "En ville",
+    "airportTab": "Aéroport",
+    "mapTitle": "Carte du réseau",
+    "mapSubtitle": "Sélectionnez une agence directement sur la carte ou dans la liste pour consulter ses actualités locales.",
+    "emptyCategory": "Aucune agence disponible dans cette catégorie.",
+    "openNews": "Voir les news de cette agence",
+    "details": "Détails",
     "missingAddress": "Adresse non renseignée",
     "missingPhone": "Téléphone non renseigné",
-    "missingEmail": "E-mail non renseigné"
+    "missingEmail": "E-mail non renseigné",
+    "availableNow": "Immediate pickup",
+    "open24h": "Open 24/7",
+    "premiumService": "Premium agency service",
+    "fastTrack": "Fast Track",
+    "businessLounge": "Business lounge",
+    "parkingIncluded": "Free parking",
+    "popular": "Populaire"
   },
+  "NewsPage": {
+  "kicker": "Actualités",
+  "title": "Les news de nos agences",
+  "filterLabel": "Choisir une agence",
+  "titleFiltered": "Les news de {agency}",
+  "subtitle": "Retrouvez toutes les actualités utiles, nouveautés et informations locales liées à nos agences.",
+  "subtitleFiltered": "Voici les dernières actualités publiées pour cette agence.",
+  "allAgencies": "Toutes les agences",
+  "empty": "Aucune news n'est disponible pour le moment.",
+  "previous": "Précédent",
+  "next": "Suivant",
+  "paginationSummary": "Page {page} sur {totalPages}"
+},
   "AuthPage": {
     "title": "Connexion client",
     "subtitle": "Connectez-vous ou créez votre compte pour accéder à vos réservations et à votre espace client.",

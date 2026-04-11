@@ -38,6 +38,7 @@ model agences {
   date_creation                                                               DateTime?                  @db.Date
   num_tel_deux                                                                String?                    @db.VarChar(20)
   categorie                                                                   String                     @default("Ville") @db.VarChar(50)
+  news                                                                        news[]
   reservations_reservations_id_lieu_depToagences                              reservations[]             @relation("reservations_id_lieu_depToagences")
   reservations_reservations_id_lieu_retToagences                              reservations[]             @relation("reservations_id_lieu_retToagences")
   reservations_entreprises_reservations_entreprises_id_agence_departToagences reservations_entreprises[] @relation("reservations_entreprises_id_agence_departToagences")
@@ -420,4 +421,19 @@ model reservations_entreprises {
   @@index([id_entreprise], map: "idx_resa_ent_entreprise")
   @@index([statut_reservation], map: "idx_resa_ent_statut_reservation")
   @@index([statut_validation], map: "idx_resa_ent_statut_validation")
+}
+
+model news {
+  id_news       String   @id @db.VarChar(11)
+  id_agence     String   @db.VarChar(11)
+  date_parution DateTime @db.Date
+  titre         String   @db.VarChar(255)
+  contenu       String
+  date_creation DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  date_dern_maj DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  agences       agences  @relation(fields: [id_agence], references: [id_agence], map: "fk_news_agence")
+
+  @@index([id_agence, date_parution(sort: Desc)], map: "idx_news_agence_date")
+  @@index([date_parution(sort: Desc)], map: "idx_news_date_parution")
+  @@index([id_agence], map: "idx_news_id_agence")
 }

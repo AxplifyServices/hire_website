@@ -1,6 +1,16 @@
 import type {MetadataRoute} from 'next';
 
-const routes = ['', '/agences', '/flotte', '/connexion', '/compte', '/compte/reservations', '/gestion-reservation'];
+const routes = [
+  '',
+  '/agences',
+  '/news',
+  '/flotte',
+  '/connexion',
+  '/compte',
+  '/compte/reservations',
+  '/gestion-reservation'
+];
+
 const locales = ['fr', 'en', 'ar'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -11,7 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/${locale}${route}`,
       lastModified: new Date(),
       changeFrequency: route === '' ? 'daily' : 'weekly',
-      priority: route === '' ? 1 : 0.7
+      priority: route === '' ? 1 : route === '/news' || route === '/agences' ? 0.85 : 0.7
     }))
   );
 }

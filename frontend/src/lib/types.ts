@@ -10,6 +10,8 @@ export type Agency = {
   disponibilite_agence?: string | null;
   url_image_agence?: string | null;
   categorie?: string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
 };
 
 export type Vehicle = {
@@ -42,6 +44,32 @@ export type VehiclesListResponse = {
     has_next: boolean;
     has_prev: boolean;
   };
+};
+
+export type NewsAgencyPreview = {
+  id_agence: string;
+  nom?: string | null;
+  ville?: string | null;
+  categorie?: string | null;
+};
+
+export type NewsItem = {
+  id_news: string;
+  id_agence: string;
+  date_parution: string;
+  titre: string;
+  contenu: string;
+  date_creation?: string | null;
+  date_dern_maj?: string | null;
+  agences?: NewsAgencyPreview | null;
+};
+
+export type NewsListResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  data: NewsItem[];
 };
 
 export type ClientProfile = {

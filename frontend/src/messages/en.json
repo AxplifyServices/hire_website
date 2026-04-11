@@ -35,7 +35,11 @@
     "lookup": {
       "title": "Reservation lookup",
       "description": "Inspect a reservation using the currently exposed endpoints."
-    }
+    },
+    "news": {
+  "title": "Agency news & updates | Hire Automotive Group",
+  "description": "Browse Hire Automotive Group agency news, filter by branch and discover useful local updates."
+}
   },
   "HomeHero": {
     "badge": "Guaranteed models - Zero hidden fees",
@@ -60,7 +64,8 @@
     "account": "My account",
     "login": "Login",
     "logout": "Log out",
-    "b2b": "B2B Area"
+    "b2b": "B2B Area",
+    "news": "News"
   },
   "WhyChoose": {
     "badge": "Why choose us",
@@ -304,13 +309,40 @@
     }
   },
   "AgenciesPage": {
-    "kicker": "Agencies API",
-    "title": "Our branches",
-    "subtitle": "This page is wired directly to the existing /agences endpoint, with no extra back-end adaptation.",
+    "kicker": "Agency network",
+    "title": "Our agencies in Morocco",
+    "subtitle": "Explore our premium network, switch between city and airport branches, then jump directly to the local news page of each agency.",
+    "cityTab": "City",
+    "airportTab": "Airport",
+    "mapTitle": "Network map",
+    "mapSubtitle": "Select an agency directly on the map or from the list to view its local updates.",
+    "emptyCategory": "No agency is available in this category.",
+    "openNews": "Open this agency news",
+    "details": "Details",
     "missingAddress": "Address not provided",
     "missingPhone": "Phone not provided",
-    "missingEmail": "Email not provided"
+    "missingEmail": "Email not provided",
+    "availableNow": "Immediate pickup",
+"open24h": "Open 24/7",
+"premiumService": "Premium agency service",
+"fastTrack": "Fast Track",
+"businessLounge": "Business lounge",
+"parkingIncluded": "Free parking",
+"popular": "Popular"
   },
+  "NewsPage": {
+  "kicker": "News",
+  "filterLabel": "Choose an agency",
+  "title": "Agency news",
+  "titleFiltered": "{agency} news",
+  "subtitle": "Browse useful updates, announcements and local information related to our agencies.",
+  "subtitleFiltered": "Here are the latest updates published for this agency.",
+  "allAgencies": "All agencies",
+  "empty": "No news is available at the moment.",
+  "previous": "Previous",
+  "next": "Next",
+  "paginationSummary": "Page {page} of {totalPages}"
+},
   "AuthPage": {
     "title": "Customer login",
     "subtitle": "Sign in or create your account to access your bookings and customer space.",

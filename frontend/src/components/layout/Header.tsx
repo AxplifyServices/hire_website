@@ -29,9 +29,10 @@ export default function Header() {
       {href: `/${locale}`, label: t('home')},
       {href: `/${locale}/flotte`, label: t('fleet')},
       {href: `/${locale}/agences`, label: t('agencies')},
+      {href: `/${locale}/news`, label: t('news')},
       {href: `/${locale}/gestion-reservation`, label: t('manageReservation')},
       {href: `/${locale}/compte`, label: t('account')},
-      {href: `/${locale}/b2b`, label: t('b2b')},
+      {href: `/${locale}/b2b`, label: t('b2b')}
     ],
     [locale, t]
   );
@@ -71,68 +72,76 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/92 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href={`/${locale}`} className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-brand-950">
-              <CarFront className="h-5 w-5" />
+        <div className="mx-auto w-full max-w-[1560px] px-4 sm:px-6 xl:px-8">
+          <div className="flex min-h-[78px] items-center justify-between gap-6">
+            <div className="min-w-0 shrink-0">
+              <Link href={`/${locale}`} className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-brand-950">
+                  <CarFront className="h-5 w-5" />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-extrabold uppercase leading-none text-white sm:text-base">
+                    Hire Automotive Group
+                  </p>
+                  <p className="mt-1 truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-gold sm:text-[11px]">
+                    Premium Mobility
+                  </p>
+                </div>
+              </Link>
             </div>
 
-            <div className="min-w-0">
-              <p className="truncate text-sm font-extrabold uppercase leading-none text-white sm:text-base">
-                Hire Automotive Group
-              </p>
-              <p className="mt-1 truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-gold sm:text-[11px]">
-                Premium Mobility
-              </p>
+            <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
+              <nav className="flex min-w-0 items-center justify-center gap-6 xl:gap-8">
+                {links.map((link) => {
+                  const active = pathname === link.href;
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`whitespace-nowrap text-sm transition ${
+                        active ? 'text-white' : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
-          </Link>
 
-          <nav className="hidden items-center gap-6 lg:flex">
-            {links.map((link) => {
-              const active = pathname === link.href;
-
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm transition ${
-                    active ? 'text-white' : 'text-white/70 hover:text-white'
-                  }`}
+            <div className="hidden shrink-0 items-center gap-3 lg:flex">
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:border-gold hover:text-gold"
                 >
-                  {link.label}
-                </Link>
-              );
-            })}
+                  {t('logout')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAuthOpen(true)}
+                  className="rounded-full border border-gold/40 px-4 py-2 text-sm font-semibold text-gold transition hover:bg-gold hover:text-brand-950"
+                >
+                  {t('login')}
+                </button>
+              )}
 
-            {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:border-gold hover:text-gold"
-              >
-                {t('logout')}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setAuthOpen(true)}
-                className="rounded-full border border-gold/40 px-4 py-2 text-sm font-semibold text-gold transition hover:bg-gold hover:text-brand-950"
-              >
-                {t('login')}
-              </button>
-            )}
+              <LanguageSwitcher />
+            </div>
 
-            <LanguageSwitcher />
-          </nav>
-
-          <button
-            type="button"
-            aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
-            onClick={() => setOpen((value) => !value)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white lg:hidden"
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+            <button
+              type="button"
+              aria-label={open ? 'Fermer le menu' : 'Ouvrir le menu'}
+              onClick={() => setOpen((value) => !value)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white lg:hidden"
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {open ? (

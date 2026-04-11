@@ -21,6 +21,7 @@ import type {
   B2BCentreCout,
   B2BCollaborateur,
   B2BProfilBeneficiaire,
+  NewsListResponse,
 } from '@/lib/types';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:3000';
@@ -108,6 +109,22 @@ export async function fetchAgencies() {
     return await fetchApi<Agency[]>('/agences');
   } catch {
     return [] as Agency[];
+  }
+}
+
+export async function fetchNews(
+  params?: Record<string, string | number | undefined | null>
+) {
+  try {
+    return await fetchApi<NewsListResponse>('/news', params);
+  } catch {
+    return {
+      page: 1,
+      limit: 10,
+      total: 0,
+      total_pages: 1,
+      data: []
+    } as NewsListResponse;
   }
 }
 
