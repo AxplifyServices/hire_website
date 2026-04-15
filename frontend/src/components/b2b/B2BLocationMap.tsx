@@ -51,9 +51,9 @@ type CityLabel = {
 
 const defaultCenter: LatLngLiteral = { lat: 31.7917, lng: -7.0926 };
 
-const MOROCCO_VIEW_BOUNDS: [[number, number], [number, number]] = [
-  [27.0, -14.8],
-  [36.4, -0.8]
+const MOROCCO_FULL_BOUNDS: [[number, number], [number, number]] = [
+  [19.8, -17.8],
+  [36.4, -0.6]
 ];
 
 /**
@@ -83,9 +83,23 @@ const MOROCCO_RING: [number, number][] = [
   [29.96, -11.18],
   [29.36, -11.34],
   [28.78, -11.48],
-  [28.18, -11.24],
-  [27.74, -10.86],
-  [27.55, -10.28],
+  [28.18, -11.8],
+  [27.55, -12.2],
+  [26.9, -12.9],
+  [26.15, -13.5],
+  [25.4, -14.1],
+  [24.7, -14.7],
+  [23.95, -15.35],
+  [23.25, -15.95],
+  [22.5, -16.45],
+  [21.75, -16.9],
+  [20.95, -17.1],
+  [21.35, -16.1],
+  [22.2, -15.0],
+  [23.3, -13.9],
+  [24.5, -12.9],
+  [25.7, -11.9],
+  [26.7, -10.95],
   [27.58, -9.58],
   [27.76, -8.92],
   [28.06, -8.34],
@@ -124,7 +138,8 @@ const CITY_LABELS: CityLabel[] = [
   { cityKey: 'rabat', name: 'Rabat', latitude: 34.0209, longitude: -6.8416 },
   { cityKey: 'fes', name: 'Fès', latitude: 34.0331, longitude: -5.0003 },
   { cityKey: 'agadir', name: 'Agadir', latitude: 30.4278, longitude: -9.5981 },
-  { cityKey: 'oujda', name: 'Oujda', latitude: 34.6814, longitude: -1.9086 }
+  { cityKey: 'oujda', name: 'Oujda', latitude: 34.6814, longitude: -1.9086 },
+    { cityKey: 'dakhla', name: 'Dakhla', latitude: 23.6848, longitude: -15.9570 },
 ];
 
 const NEIGHBORHOOD_LABELS: NeighborhoodLabel[] = [
@@ -303,8 +318,12 @@ function ZoomAwareLabels({
   const showCityLabels = zoom < 8.6;
   const showNeighborhoods = zoom >= 8.6 && zoom < 11;
 
-  const visibleCities = CITY_LABELS.filter((item) =>
-    allowedCities.some((city) => city.key === item.cityKey)
+  const PASSIVE_CITY_KEYS = ['dakhla'];
+
+  const visibleCities = CITY_LABELS.filter(
+    (item) =>
+      allowedCities.some((city) => city.key === item.cityKey) ||
+      PASSIVE_CITY_KEYS.includes(item.cityKey)
   );
 
   const visibleNeighborhoods = NEIGHBORHOOD_LABELS.filter((item) =>
@@ -474,20 +493,25 @@ export default function B2BLocationMap({
     )
   ];
 
+  const DECORATIVE_CITIES = [
+    { name: 'Dakhla', lat: 23.6848, lng: -15.9570 },
+    { name: 'Lagouira', lat: 20.85, lng: -17.10 }
+  ];
+
   return (
     <div className="overflow-hidden rounded-[24px] border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
       <MapContainer
-        center={defaultCenter}
-        zoom={5.8}
-        minZoom={5.5}
+        center={{ lat: 28.8, lng: -8.9 }}
+        zoom={4.15}
+        minZoom={4.0}
         maxZoom={18}
         zoomControl={true}
         scrollWheelZoom={true}
         doubleClickZoom={true}
         dragging={true}
         style={{ height: '420px', width: '100%', background: '#0B0F17' }}
-        maxBounds={MOROCCO_VIEW_BOUNDS}
-        maxBoundsViscosity={1}
+        maxBounds={MOROCCO_FULL_BOUNDS}
+        maxBoundsViscosity={0.9}
       >
         <TileLayer
           attribution="&copy; CARTO & OpenStreetMap contributors"
@@ -502,8 +526,8 @@ export default function B2BLocationMap({
           positions={[WORLD_RING, MOROCCO_RING]}
           pathOptions={{
             stroke: false,
-            fillColor: '#05070B',
-            fillOpacity: 0.72,
+            fillColor: '#080B12',
+            fillOpacity: 0.52,
             fillRule: 'evenodd'
           }}
         />
@@ -512,8 +536,8 @@ export default function B2BLocationMap({
           positions={moroccoOutsideTargetCityMask}
           pathOptions={{
             stroke: false,
-            fillColor: '#0A0D14',
-            fillOpacity: 0.38,
+            fillColor: '#080B12',
+            fillOpacity: 0.52,
             fillRule: 'evenodd'
           }}
         />

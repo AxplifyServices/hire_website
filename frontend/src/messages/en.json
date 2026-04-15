@@ -109,6 +109,7 @@
   },
   "Footer": {
     "brandSubtitle": "Premium Mobility",
+    "news": "News",
     "description": "Premium car rental in Morocco. Guaranteed vehicles, zero hidden fees, and a service designed for a premium experience.",
     "account": "My account",
     "manageBooking": "Manage my booking",
@@ -546,6 +547,7 @@
   },
   "B2BPage": {
     "kicker": "Corporate mobility",
+    "automaticValidation": "Automatic validation",
     "title": "B2B Area",
     "subtitle": "This area lets authenticated collaborators track company reservations, pending approvals and history.",
     "loading": "Loading B2B area...",

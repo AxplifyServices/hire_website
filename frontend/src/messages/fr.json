@@ -72,6 +72,7 @@
   },
   "Footer": {
     "brandSubtitle": "Mobilité Premium",
+    "news": "Actualités",
     "description": "Location de voitures haut de gamme au Maroc. Véhicules garantis, zéro frais cachés et un service pensé pour une expérience premium.",
     "account": "Mon compte",
     "manageBooking": "Gérer ma réservation",
@@ -549,6 +550,7 @@
   },
   "B2BPage": {
     "kicker": "Mobilité entreprise",
+    "automaticValidation": "Validation automatique",
     "title": "Espace B2B",
     "subtitle": "Cet espace permet au collaborateur connecté de suivre ses réservations entreprise, ses validations en attente et son historique.",
     "loading": "Chargement de l’espace B2B...",

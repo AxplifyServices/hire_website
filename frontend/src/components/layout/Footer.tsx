@@ -8,8 +8,9 @@ import {
   MapPin,
   MessageCircle,
   Phone,
+  UserCircle2,
   Search,
-  UserCircle2
+  Newspaper
 } from 'lucide-react';
 import {FaInstagram, FaFacebook, FaWhatsapp} from 'react-icons/fa';
 
@@ -25,14 +26,7 @@ export default async function Footer() {
     {key: 'navHome', href: '', icon: Landmark},
     {key: 'navFleet', href: '/flotte', icon: CarFront},
     {key: 'navAgencies', href: '/agences', icon: MapPin},
-    {key: 'navAccount', href: '/b2b', icon: UserCircle2}
-  ];
-
-  const serviceLinks = [
-    {key: 'manageBooking', href: '/news', icon: Search},
-    {key: 'account', href: '/b2b', icon: UserCircle2},
-    {key: 'navFleet', href: '/flotte', icon: CarFront},
-    {key: 'navAgencies', href: '/agences', icon: MapPin}
+    {key: 'news', href: '/news', icon: Newspaper}
   ];
 
   const contactItems = [
@@ -53,7 +47,7 @@ export default async function Footer() {
   return (
     <footer className="border-t border-white/10 bg-[#0f1115]">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-[1.3fr_0.8fr_0.9fr_0.9fr]">
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-[1.3fr_0.9fr_0.9fr]">
           <div className="space-y-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-brand-950">
@@ -76,7 +70,7 @@ export default async function Footer() {
 
             <div className="flex flex-wrap gap-3">
               <Link
-                href={withLocale(locale, '/b2b')}
+                href={withLocale(locale, '/compte')}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-white transition hover:border-gold/40 hover:bg-white/10"
               >
                 <UserCircle2 className="h-4 w-4 text-gold" />
@@ -84,7 +78,7 @@ export default async function Footer() {
               </Link>
 
               <Link
-                href={withLocale(locale, '/news')}
+                href={withLocale(locale, '/gestion-reservation')}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-white transition hover:border-gold/40 hover:bg-white/10"
               >
                 <Search className="h-4 w-4 text-gold" />
@@ -131,33 +125,6 @@ export default async function Footer() {
                 return (
                   <Link
                     key={item.key}
-                    href={withLocale(locale, item.href)}
-                    className="group flex min-h-11 items-center justify-between rounded-xl px-3 text-sm text-white/72 transition hover:bg-white/5 hover:text-white"
-                  >
-                    <span className="flex items-center gap-3">
-                      <Icon className="h-4 w-4 text-gold" />
-                      {t(item.key)}
-                    </span>
-
-                    <ChevronRight className="h-4 w-4 text-white/35 transition group-hover:translate-x-0.5 group-hover:text-gold" />
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div>
-            <p className="mb-4 text-sm font-bold uppercase tracking-[0.14em] text-white">
-              {t('information')}
-            </p>
-
-            <nav className="space-y-3">
-              {serviceLinks.map((item, index) => {
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={`${item.key}-${index}`}
                     href={withLocale(locale, item.href)}
                     className="group flex min-h-11 items-center justify-between rounded-xl px-3 text-sm text-white/72 transition hover:bg-white/5 hover:text-white"
                   >

@@ -369,6 +369,22 @@ function openPicker(ref: RefObject<HTMLInputElement | null>) {
   }
 }
 
+function smoothScrollTo(ref: RefObject<HTMLElement | null>, offset = 110) {
+  if (typeof window === 'undefined') return;
+
+  window.requestAnimationFrame(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const top = element.getBoundingClientRect().top + window.scrollY - offset;
+
+    window.scrollTo({
+      top: Math.max(top, 0),
+      behavior: 'smooth'
+    });
+  });
+}
+
 function useOutsideClose<T extends HTMLElement>(onClose: () => void) {
   const ref = useRef<T | null>(null);
 
@@ -683,6 +699,9 @@ export default function B2BReservationFlow({
   const departureDateRef = useRef<HTMLInputElement | null>(null);
   const returnDateRef = useRef<HTMLInputElement | null>(null);
 
+  const vehiclesSectionRef = useRef<HTMLDivElement | null>(null);
+  const validationActionRef = useRef<HTMLDivElement | null>(null);
+
   const today = formatToday();
 
   useEffect(() => {
@@ -714,6 +733,36 @@ export default function B2BReservationFlow({
   const selectedBeneficiary = collaborateurs.find(
     (item) => item.id_client_entreprise === beneficiaireId
   );
+
+  const effectiveBeneficiary =
+    selectedBeneficiary ||
+    collaborateurs.find(
+      (item) => item.id_client_entreprise === defaultMembership?.id_client_entreprise
+    ) ||
+    null;
+
+  const validatorMembershipId =
+    effectiveBeneficiary?.manager_id_client_entreprise ||
+    defaultMembership?.manager_id_client_entreprise ||
+    null;
+
+  const validatorCollaborateur =
+    collaborateurs.find(
+      (item) => item.id_client_entreprise === validatorMembershipId
+    ) || null;
+
+  const validatorName =
+    [validatorCollaborateur?.clients?.prenom, validatorCollaborateur?.clients?.nom]
+      .filter(Boolean)
+      .join(' ') ||
+    validatorCollaborateur?.clients?.mail ||
+    '';
+
+  const validatorDisplay =
+    validatorMembershipId &&
+    validatorMembershipId !== effectiveBeneficiary?.id_client_entreprise
+      ? validatorName || t('automaticValidation')
+      : t('automaticValidation');
 
   const effectiveCentreCoutId = selectedBeneficiary?.id_centre_cout || undefined;
   const effectiveProfilBeneficiaireId =
@@ -878,7 +927,14 @@ export default function B2BReservationFlow({
         heure_ret: heureRet
       });
 
-      setVehicles(result || []);
+      const nextVehicles = result || [];
+      setVehicles(nextVehicles);
+
+      if (nextVehicles.length > 0) {
+        setTimeout(() => {
+          smoothScrollTo(vehiclesSectionRef);
+        }, 120);
+      }
     } catch (err) {
       setVehiclesError(err instanceof Error ? err.message : t('genericError'));
     } finally {
@@ -1378,7 +1434,7 @@ export default function B2BReservationFlow({
         {vehiclesError ? <p className="mt-3 text-sm text-red-300">{vehiclesError}</p> : null}
       </div>
 
-      <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+      <div ref={vehiclesSectionRef} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-base font-semibold text-white">{t('availableVehicles')}</h3>
           <span className="text-sm text-white/55">
@@ -1406,6 +1462,10 @@ export default function B2BReservationFlow({
                     setSubmitSuccess('');
                     setSubmitError('');
                     setStep('form');
+
+                    setTimeout(() => {
+                      smoothScrollTo(validationActionRef);
+                    }, 120);
                   }}
                   seatLabel={fleetT('seats')}
                   perDayLabel={fleetT('perDay')}
@@ -1417,7 +1477,7 @@ export default function B2BReservationFlow({
         )}
       </div>
 
-      <div className="flex justify-center">
+      <div ref={validationActionRef} className="flex justify-center">
         <button
           type="button"
           onClick={handlePrepareReservation}
@@ -1526,16 +1586,9 @@ export default function B2BReservationFlow({
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-                  <p className="text-sm text-white/45">{t('quoteAllowed')}</p>
+                  <p className="text-sm text-white/45">{t('validatorName')}</p>
                   <p className="mt-2 text-lg font-semibold text-white">
-                    {quote.allowed ? t('yes') : t('no')}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
-                  <p className="text-sm text-white/45">{t('quoteRequiresValidation')}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    {quote.requires_validation ? t('yes') : t('no')}
+                    {validatorDisplay}
                   </p>
                 </div>
 

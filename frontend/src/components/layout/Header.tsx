@@ -31,8 +31,7 @@ export default function Header() {
       {href: `/${locale}/agences`, label: t('agencies')},
       {href: `/${locale}/news`, label: t('news')},
       {href: `/${locale}/gestion-reservation`, label: t('manageReservation')},
-      {href: `/${locale}/compte`, label: t('account')},
-      {href: `/${locale}/b2b`, label: t('b2b')}
+      {href: `/${locale}/compte`, label: t('account')}
     ],
     [locale, t]
   );
