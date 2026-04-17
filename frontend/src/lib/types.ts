@@ -32,6 +32,7 @@ export type Vehicle = {
   url_image_vehicule: string | null;
   capacite_coffre: number | null;
   description: string | null;
+  type_vehicule: string | null;
 };
 
 export type VehiclesListResponse = {
@@ -282,6 +283,7 @@ export type B2BProfilBeneficiaire = {
   avec_chauffeur_autorise: boolean | null;
   sans_chauffeur_autorise: boolean | null;
   actif: boolean | null;
+  liste_type_autorise: string[];
 };
 
 export type B2BMembership = {
@@ -319,7 +321,6 @@ export type B2BQuotePayload = {
   id_client_entreprise_demandeur: string;
   id_client_entreprise_beneficiaire?: string;
   id_centre_cout?: string;
-  id_profil_beneficiaire?: string;
   id_vehicule: string;
   id_agence_depart: string;
   id_agence_retour?: string;
@@ -360,7 +361,6 @@ export type CreateB2BReservationPayload = {
   id_client_entreprise_demandeur: string;
   id_client_entreprise_beneficiaire?: string;
   id_centre_cout?: string;
-  id_profil_beneficiaire?: string;
   id_vehicule: string;
   id_agence_depart: string;
   id_agence_retour?: string;

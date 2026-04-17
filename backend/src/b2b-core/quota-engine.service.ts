@@ -33,10 +33,6 @@ export class QuotaEngineService {
       },
     });
 
-    if (quota) {
-      return quota;
-    }
-
     const membership = await this.prisma.clients_entreprises.findUnique({
       where: { id_client_entreprise },
       include: {
@@ -48,36 +44,71 @@ export class QuotaEngineService {
       throw new NotFoundException('Collaborateur entreprise introuvable.');
     }
 
-    quota = await this.prisma.quotas_clients_entreprises.create({
+    const profil = membership.profils_beneficiaires;
+
+    const expectedJours = profil ? Number(profil.nb_jours_mois ?? 0) : null;
+    const expectedBudget = profil
+      ? Number(profil.budget_plafond_mensuel ?? 0)
+      : null;
+    const expectedReservationsMax = profil
+      ? Number(profil.nb_reservations_simultanees ?? 0)
+      : null;
+
+    if (!quota) {
+      quota = await this.prisma.quotas_clients_entreprises.create({
+        data: {
+          id_quota_client_entreprise: await this.generateNextQuotaId(),
+          id_client_entreprise,
+          periode_annee: year,
+          periode_mois: month,
+
+          // Snapshot mensuel initial depuis le profil bénéficiaire
+          jours_alloues: expectedJours,
+          jours_utilises: 0,
+
+          budget_alloue: expectedBudget,
+          budget_utilise: 0,
+
+          reservations_max_simultanees: expectedReservationsMax,
+          reservations_simultanees_utilisees: 0,
+
+          nb_trajets_alloues: null,
+          nb_trajets_utilises: 0,
+
+          actif: true,
+          date_creation: new Date(),
+          date_dern_maj: new Date(),
+        },
+      });
+
+      return quota;
+    }
+
+    const shouldResyncLimits =
+      (quota.jours_alloues ?? null) !== expectedJours ||
+      Number(quota.budget_alloue ?? 0) !== Number(expectedBudget ?? 0) ||
+      (quota.reservations_max_simultanees ?? null) !== expectedReservationsMax;
+
+    if (!shouldResyncLimits) {
+      return quota;
+    }
+
+    quota = await this.prisma.quotas_clients_entreprises.update({
+      where: {
+        id_quota_client_entreprise: quota.id_quota_client_entreprise,
+      },
       data: {
-        id_quota_client_entreprise: await this.generateNextQuotaId(),
-        id_client_entreprise,
-        periode_annee: year,
-        periode_mois: month,
-
-        // Snapshot mensuel initial depuis le profil bénéficiaire
-        jours_alloues: membership.profils_beneficiaires?.nb_jours_mois ?? null,
-        jours_utilises: 0,
-
-        budget_alloue:
-          membership.profils_beneficiaires?.budget_plafond_mensuel ?? null,
-        budget_utilise: 0,
-
-        reservations_max_simultanees:
-          membership.profils_beneficiaires?.nb_reservations_simultanees ?? null,
-        reservations_simultanees_utilisees: 0,
-
-        nb_trajets_alloues: null,
-        nb_trajets_utilises: 0,
-
-        actif: true,
-        date_creation: new Date(),
+        jours_alloues: expectedJours,
+        budget_alloue: expectedBudget,
+        reservations_max_simultanees: expectedReservationsMax,
         date_dern_maj: new Date(),
       },
     });
 
     return quota;
   }
+ 
+
 
   private async getMembershipWithProfile(id_client_entreprise: string) {
     const membership = await this.prisma.clients_entreprises.findUnique({
@@ -94,22 +125,33 @@ export class QuotaEngineService {
     return membership;
   }
 
-  private getEffectiveLimits(_membership: any, quota: any): EffectiveLimits {
+  private getEffectiveLimits(membership: any, _quota: any): EffectiveLimits {
+    const profil = membership?.profils_beneficiaires;
+
+    if (!profil) {
+      return {
+        jours_alloues: null,
+        budget_alloue: null,
+        reservations_max_simultanees: null,
+      };
+    }
+
     return {
       jours_alloues:
-        quota?.jours_alloues !== null && quota?.jours_alloues !== undefined
-          ? Number(quota.jours_alloues)
+        profil.nb_jours_mois !== null && profil.nb_jours_mois !== undefined
+          ? Number(profil.nb_jours_mois)
           : null,
 
       budget_alloue:
-        quota?.budget_alloue !== null && quota?.budget_alloue !== undefined
-          ? Number(quota.budget_alloue)
+        profil.budget_plafond_mensuel !== null &&
+        profil.budget_plafond_mensuel !== undefined
+          ? Number(profil.budget_plafond_mensuel)
           : null,
 
       reservations_max_simultanees:
-        quota?.reservations_max_simultanees !== null &&
-        quota?.reservations_max_simultanees !== undefined
-          ? Number(quota.reservations_max_simultanees)
+        profil.nb_reservations_simultanees !== null &&
+        profil.nb_reservations_simultanees !== undefined
+          ? Number(profil.nb_reservations_simultanees)
           : null,
     };
   }

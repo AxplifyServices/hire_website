@@ -158,6 +158,7 @@ export async function searchVehicles(params: {
   date_ret: string;
   heure_dep?: string;
   heure_ret?: string;
+  id_client_entreprise_beneficiaire?: string;
 }) {
   return await fetchApi<Vehicle[]>('/vehicules/search', {
     heure_dep: params.heure_dep ?? '10:00',

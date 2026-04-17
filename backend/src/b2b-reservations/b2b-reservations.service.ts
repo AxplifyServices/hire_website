@@ -148,9 +148,7 @@ export class B2bReservationsService {
           policy.context.centre_cout?.id_centre_cout ??
           null,
         id_profil_beneficiaire:
-          dto.id_profil_beneficiaire ??
-          policy.context.profil_beneficiaire?.id_profil_beneficiaire ??
-          null,
+          policy.context.profil_beneficiaire?.id_profil_beneficiaire ?? null,
         id_vehicule: dto.id_vehicule,
 
         id_agence_depart,

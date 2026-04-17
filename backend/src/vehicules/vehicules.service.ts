@@ -141,49 +141,75 @@ export class VehiculesService {
     };
   }
 
- async search(dto: SearchVehiculesDto) {
-  const start = this.combineDateAndTime(
-    dto.date_dep,
-    dto.heure_dep ?? '10:00:00',
-  );
-
-  const end = this.combineDateAndTime(
-    dto.date_ret,
-    dto.heure_ret ?? '10:00:00',
-  );
-
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    throw new BadRequestException('Dates/heures invalides.');
-  }
-
-  if (end <= start) {
-    throw new BadRequestException(
-      'La date et heure de retour doivent être après la date et heure de départ.',
+  async search(dto: SearchVehiculesDto) {
+    const start = this.combineDateAndTime(
+      dto.date_dep,
+      dto.heure_dep ?? '10:00:00',
     );
-  }
 
-  const vehicules = await this.prisma.vehicules.findMany({
-    where: {
-      status_vehicule: {
-        equals: 'Actif',
-        mode: 'insensitive',
+    const end = this.combineDateAndTime(
+      dto.date_ret,
+      dto.heure_ret ?? '10:00:00',
+    );
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      throw new BadRequestException('Dates/heures invalides.');
+    }
+
+    if (end <= start) {
+      throw new BadRequestException(
+        'La date et heure de retour doivent être après la date et heure de départ.',
+      );
+    }
+
+    let allowedTypes: string[] | null = null;
+
+    if (dto.id_client_entreprise_beneficiaire) {
+      const membership = await this.prisma.clients_entreprises.findUnique({
+        where: {
+          id_client_entreprise: dto.id_client_entreprise_beneficiaire,
+        },
+        include: {
+          profils_beneficiaires: true,
+        },
+      });
+
+      const profil = membership?.profils_beneficiaires;
+
+      if (profil?.liste_type_autorise && profil.liste_type_autorise.length > 0) {
+        allowedTypes = profil.liste_type_autorise;
+      }
+    }
+
+    const vehicules = await this.prisma.vehicules.findMany({
+      where: {
+        status_vehicule: {
+          equals: 'Actif',
+          mode: 'insensitive',
+        },
+        ...(allowedTypes
+          ? {
+              type_vehicule: {
+                in: allowedTypes,
+              },
+            }
+          : {}),
       },
-    },
-    orderBy: {
-      prix_jour: 'asc',
-    },
-  });
+      orderBy: {
+        prix_jour: 'asc',
+      },
+    });
 
-  return vehicules.map((vehicule) => ({
-    ...vehicule,
-    prix_jour:
-      vehicule.prix_jour !== null ? Number(vehicule.prix_jour) : null,
-    capacite_coffre:
-      vehicule.capacite_coffre !== null
-        ? Number(vehicule.capacite_coffre)
-        : null,
-  }));
-}
+    return vehicules.map((vehicule) => ({
+      ...vehicule,
+      prix_jour:
+        vehicule.prix_jour !== null ? Number(vehicule.prix_jour) : null,
+      capacite_coffre:
+        vehicule.capacite_coffre !== null
+          ? Number(vehicule.capacite_coffre)
+          : null,
+    }));
+  }
 
   private combineDateAndTime(dateValue: Date | string, timeValue: string): Date {
     const date =

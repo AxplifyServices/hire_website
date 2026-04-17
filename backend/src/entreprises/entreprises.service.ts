@@ -187,6 +187,7 @@ export class EntreprisesService {
             dto.nb_reservations_simultanees ?? null,
           avec_chauffeur_autorise: dto.avec_chauffeur_autorise ?? false,
           sans_chauffeur_autorise: dto.sans_chauffeur_autorise ?? true,
+          liste_type_autorise: dto.liste_type_autorise ?? [],
           actif: dto.actif ?? true,
           date_creation: now,
           date_dern_maj: now,
@@ -206,6 +207,7 @@ export class EntreprisesService {
           actif: true,
           date_creation: true,
           date_dern_maj: true,
+          liste_type_autorise: true,
         },
       });
 
@@ -615,6 +617,7 @@ export class EntreprisesService {
         nb_reservations_simultanees: true,
         avec_chauffeur_autorise: true,
         sans_chauffeur_autorise: true,
+        liste_type_autorise: true,
         actif: true,
         date_creation: true,
         date_dern_maj: true,

@@ -125,19 +125,7 @@ export class PolicyEngineService {
       errors.push('Centre de coût introuvable ou inactif.');
     }
 
-    const profil = input.id_profil_beneficiaire
-      ? await this.prisma.profils_beneficiaires.findFirst({
-          where: {
-            id_profil_beneficiaire: input.id_profil_beneficiaire,
-            id_entreprise: entreprise.id_entreprise,
-            actif: true,
-          },
-        })
-      : beneficiaire.profils_beneficiaires ?? null;
-
-    if (input.id_profil_beneficiaire && !profil) {
-      errors.push('Profil bénéficiaire introuvable ou inactif.');
-    }
+    const profil = beneficiaire.profils_beneficiaires ?? null;
 
     const vehicule = await this.prisma.vehicules.findFirst({
       where: {
@@ -148,6 +136,21 @@ export class PolicyEngineService {
 
     if (!vehicule) {
       errors.push('Véhicule introuvable ou inactif.');
+    }
+
+    if (
+      profil &&
+      Array.isArray(profil.liste_type_autorise) &&
+      profil.liste_type_autorise.length > 0
+    ) {
+      if (
+        !vehicule?.type_vehicule ||
+        !profil.liste_type_autorise.includes(vehicule.type_vehicule)
+      ) {
+        errors.push(
+          'Le véhicule sélectionné n’est pas autorisé pour ce profil bénéficiaire.',
+        );
+      }
     }
 
     // =====================================================
@@ -259,18 +262,15 @@ export class PolicyEngineService {
     }
 
     if (quotaCheck.exceeded.jours) {
-      requires_validation = true;
-      warnings.push('Le quota mensuel de jours serait dépassé.');
+      errors.push('Le quota mensuel de jours est insuffisant pour cette réservation.');
     }
 
     if (quotaCheck.exceeded.budget) {
-      requires_validation = true;
-      warnings.push('Le budget mensuel serait dépassé.');
+      errors.push('Le budget mensuel est insuffisant pour cette réservation.');
     }
 
     if (quotaCheck.exceeded.simultanees) {
-      requires_validation = true;
-      warnings.push('Le nombre de réservations simultanées serait dépassé.');
+      errors.push('Le nombre maximal de réservations simultanées est atteint.');
     }
 
     return {

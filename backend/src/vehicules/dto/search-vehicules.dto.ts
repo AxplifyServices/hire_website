@@ -21,4 +21,8 @@ export class SearchVehiculesDto {
     message: 'heure_ret doit être au format HH:mm ou HH:mm:ss',
   })
   heure_ret?: string;
+  
+  @IsOptional()
+  @IsString()
+  id_client_entreprise_beneficiaire?: string;
 }

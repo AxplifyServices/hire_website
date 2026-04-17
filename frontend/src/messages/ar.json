@@ -658,6 +658,7 @@
     "remainingBalanceAfterApproval": "الرصيد بعد الموافقة",
     "availableDays": "عدد الأيام المتاحة",
     "remainingDaysAfterReservation": "الأيام المتبقية بعد الحجز",
-    "unlimited": "غير محدود"
+    "unlimited": "غير محدود",
+    "insufficientBalance": "الرصيد غير كافٍ"
   }
 }

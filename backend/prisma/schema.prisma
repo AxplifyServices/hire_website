@@ -211,6 +211,7 @@ model vehicules {
   description              String?
   date_creation            DateTime?                  @db.Date
   date_dern_maj            DateTime?                  @db.Date
+  type_vehicule            String?                    @db.VarChar(20)
   avis                     avis[]
   reservations             reservations[]
   reservations_entreprises reservations_entreprises[]
@@ -306,6 +307,7 @@ model profils_beneficiaires {
   actif                       Boolean?                   @default(true)
   date_creation               DateTime?                  @default(dbgenerated("CURRENT_DATE")) @db.Date
   date_dern_maj               DateTime?                  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  liste_type_autorise         String[]
   clients_entreprises         clients_entreprises[]
   entreprises                 entreprises                @relation(fields: [id_entreprise], references: [id_entreprise], onDelete: NoAction, onUpdate: NoAction, map: "fk_profil_beneficiaire_entreprise")
   reservations_entreprises    reservations_entreprises[]

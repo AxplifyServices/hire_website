@@ -661,6 +661,7 @@
     "remainingBalanceAfterApproval": "Solde après validation",
     "availableDays": "Nombre de jours disponibles",
     "remainingDaysAfterReservation": "Jours restants après réservation",
-    "unlimited": "Illimité"
+    "unlimited": "Illimité",
+    "insufficientBalance": "Solde insuffisant"
   }
 }

@@ -658,6 +658,7 @@
     "remainingBalanceAfterApproval": "Balance after approval",
     "availableDays": "Available days",
     "remainingDaysAfterReservation": "Remaining days after reservation",
-    "unlimited": "Unlimited"
+    "unlimited": "Unlimited",
+    "insufficientBalance": "Insufficient balance"
   }
 }

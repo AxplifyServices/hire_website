@@ -5,6 +5,7 @@ import {
   IsString,
   MaxLength,
   Min,
+  IsArray,
 } from 'class-validator';
 
 export class CreateProfilBeneficiaireDto {
@@ -46,6 +47,12 @@ export class CreateProfilBeneficiaireDto {
   @IsOptional()
   @IsBoolean()
   sans_chauffeur_autorise?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  liste_type_autorise?: string[];
 
   @IsOptional()
   @IsBoolean()

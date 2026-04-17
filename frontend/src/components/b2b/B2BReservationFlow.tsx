@@ -765,23 +765,46 @@ export default function B2BReservationFlow({
       : t('automaticValidation');
 
   const effectiveCentreCoutId = selectedBeneficiary?.id_centre_cout || undefined;
-  const effectiveProfilBeneficiaireId =
-    selectedBeneficiary?.id_profil_beneficiaire || undefined;
 
   const selectedVehicle =
     vehicles.find((vehicle) => vehicle.id_vehicule === selectedVehicleId) || null;
 
-  const quotaSummary = useMemo(() => {
-    return (
-      parseQuotaSummary(quote?.quota_status) ??
-      parseQuotaSummary(selectedBeneficiary?.role_entreprise) ??
-      parseQuotaSummary(defaultMembership?.role_entreprise)
+  const allowedVehicleTypes = useMemo(() => {
+    const list = effectiveBeneficiary?.profils_beneficiaires?.liste_type_autorise;
+    return Array.isArray(list) ? list : [];
+  }, [effectiveBeneficiary?.profils_beneficiaires?.liste_type_autorise]);
+
+  const filteredVehicles = useMemo(() => {
+    if (!allowedVehicleTypes.length) {
+      return vehicles;
+    }
+
+    return vehicles.filter(
+      (vehicle) =>
+        !!vehicle.type_vehicule && allowedVehicleTypes.includes(vehicle.type_vehicule)
     );
-  }, [
-    quote?.quota_status,
-    selectedBeneficiary?.role_entreprise,
-    defaultMembership?.role_entreprise
-  ]);
+  }, [vehicles, allowedVehicleTypes]);
+
+  useEffect(() => {
+    if (!selectedVehicleId) return;
+
+    const stillAllowed = filteredVehicles.some(
+      (vehicle) => vehicle.id_vehicule === selectedVehicleId
+    );
+
+    if (!stillAllowed) {
+      setSelectedVehicleId('');
+      setQuote(null);
+      setQuoteError('');
+      setSubmitError('');
+      setSubmitSuccess('');
+      setStep('form');
+    }
+  }, [filteredVehicles, selectedVehicleId]);
+
+  const quotaSummary = useMemo(() => {
+    return parseQuotaSummary(quote?.quota_status);
+  }, [quote?.quota_status]);
 
   const remainingBudgetDisplay = useMemo(() => {
     if (!quote) return '—';
@@ -824,6 +847,36 @@ export default function B2BReservationFlow({
 
     return String(projected);
   }, [quote, quotaSummary, t]);
+
+  const consumedBudget = useMemo(() => {
+    if (!quote) return 0;
+    return Number(quote.quota_consomme?.budget ?? quote.prix_estime ?? 0);
+  }, [quote]);
+
+  const consumedDays = useMemo(() => {
+    if (!quote) return 0;
+    return Number(quote.quota_consomme?.jours ?? 0);
+  }, [quote]);
+
+  const isBudgetInsufficient = useMemo(() => {
+    if (!quote || !quotaSummary) return false;
+    if (quotaSummary.budget_restant === null || quotaSummary.budget_restant === undefined) {
+      return false;
+    }
+
+    return consumedBudget > quotaSummary.budget_restant;
+  }, [quote, quotaSummary, consumedBudget]);
+
+  const isDaysInsufficient = useMemo(() => {
+    if (!quote || !quotaSummary) return false;
+    if (quotaSummary.jours_restants === null || quotaSummary.jours_restants === undefined) {
+      return false;
+    }
+
+    return consumedDays > quotaSummary.jours_restants;
+  }, [quote, quotaSummary, consumedDays]);
+
+  const hasQuotaBlockingIssue = isBudgetInsufficient || isDaysInsufficient;
 
   const canSearchVehicles =
     !!dateDep &&
@@ -924,7 +977,11 @@ export default function B2BReservationFlow({
         date_dep: dateDep,
         date_ret: dateRet,
         heure_dep: heureDep,
-        heure_ret: heureRet
+        heure_ret: heureRet,
+        id_client_entreprise_beneficiaire:
+          effectiveBeneficiary?.id_client_entreprise ||
+          defaultMembership?.id_client_entreprise ||
+          undefined,
       });
 
       const nextVehicles = result || [];
@@ -957,7 +1014,6 @@ export default function B2BReservationFlow({
         id_client_entreprise_demandeur: defaultMembership!.id_client_entreprise,
         id_client_entreprise_beneficiaire: beneficiaireId || undefined,
         id_centre_cout: effectiveCentreCoutId,
-        id_profil_beneficiaire: effectiveProfilBeneficiaireId,
         id_vehicule: selectedVehicleId,
 
         id_agence_depart: departureAgencyId,
@@ -1027,7 +1083,6 @@ export default function B2BReservationFlow({
         id_client_entreprise_demandeur: defaultMembership.id_client_entreprise,
         id_client_entreprise_beneficiaire: beneficiaireId || undefined,
         id_centre_cout: effectiveCentreCoutId,
-        id_profil_beneficiaire: effectiveProfilBeneficiaireId,
         id_vehicule: selectedVehicleId,
 
         id_agence_depart: departureAgencyId,
@@ -1438,15 +1493,15 @@ export default function B2BReservationFlow({
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-base font-semibold text-white">{t('availableVehicles')}</h3>
           <span className="text-sm text-white/55">
-            {vehicles.length} {t('vehiclesCount')}
+            {filteredVehicles.length} {t('vehiclesCount')}
           </span>
         </div>
 
-        {!vehicles.length ? (
+        {!filteredVehicles.length ? (
           <p className="mt-4 text-sm text-white/55">{t('noVehiclesLoaded')}</p>
         ) : (
           <div className="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {vehicles.map((vehicle) => {
+            {filteredVehicles.map((vehicle) => {
               const selected = vehicle.id_vehicule === selectedVehicleId;
 
               return (
@@ -1597,6 +1652,12 @@ export default function B2BReservationFlow({
                   <p className="mt-2 text-lg font-semibold text-white">
                     {remainingBudgetDisplay}
                   </p>
+
+                  {isBudgetInsufficient ? (
+                    <span className="mt-3 inline-flex rounded-full border border-red-500/40 bg-red-500/15 px-3 py-1 text-xs font-semibold text-red-300">
+                      {t('insufficientBalance')}
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
@@ -1611,6 +1672,12 @@ export default function B2BReservationFlow({
                   <p className="mt-2 text-lg font-semibold text-white">
                     {availableDaysDisplay}
                   </p>
+
+                  {isDaysInsufficient ? (
+                    <span className="mt-3 inline-flex rounded-full border border-red-500/40 bg-red-500/15 px-3 py-1 text-xs font-semibold text-red-300">
+                      {t('insufficientBalance')}
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-black/10 p-4">
@@ -1633,8 +1700,7 @@ export default function B2BReservationFlow({
                 <button
                   type="button"
                   onClick={handleCreateReservation}
-                  disabled={!quote || submitLoading || !quote.allowed}
-                  className="rounded-full bg-gold px-5 py-3 text-sm font-semibold text-brand-950 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={!quote || submitLoading || !quote.allowed || hasQuotaBlockingIssue}                  className="rounded-full bg-gold px-5 py-3 text-sm font-semibold text-brand-950 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitLoading ? t('creatingReservation') : t('confirmReservation')}
                 </button>
