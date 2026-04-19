@@ -148,6 +148,7 @@ export type AdminReservation = ReservationRecord & {
   vehicules?: Vehicle | null;
   agences_reservations_id_lieu_depToagences?: Agency | null;
   agences_reservations_id_lieu_retToagences?: Agency | null;
+  nb_jour?: number | null;
 };
 
 export type AdminReservationsListResponse = {

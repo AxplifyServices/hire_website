@@ -723,7 +723,21 @@ export default function AdminReservationsManager() {
                     label="Retour"
                     value={formatDateTime(selectedReservation.date_ret, selectedReservation.heure_ret)}
                   />
-                  <DetailRow label="Nombre de jours" value={selectedReservation.nb_jour ?? '—'} />
+                  <DetailRow
+                    label="Nombre de jours"
+                    value={
+                      selectedReservation.date_dep && selectedReservation.date_ret
+                        ? Math.max(
+                            1,
+                            Math.ceil(
+                              (new Date(selectedReservation.date_ret).getTime() -
+                                new Date(selectedReservation.date_dep).getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            )
+                          )
+                        : '—'
+                    }
+                  />
                 </div>
               </div>
 
