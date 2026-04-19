@@ -602,6 +602,71 @@ export async function fetchB2BCollaborateurs(
   );
 }
 
+// =========================
+// Compat legacy B2B names
+// =========================
+
+export async function fetchEntrepriseCollaborateurs(
+  entrepriseId: string,
+  token: string
+) {
+  return await fetchB2BCollaborateurs(entrepriseId, token);
+}
+
+export async function getB2bQuote(
+  payload: B2BQuotePayload,
+  token: string
+) {
+  return await getB2BQuote(payload, token);
+}
+
+export async function createB2bReservation(
+  payload: CreateB2BReservationPayload,
+  token: string
+) {
+  return await createB2BReservation(payload, token);
+}
+
+export async function fetchMyB2bReservations(token: string) {
+  return await fetchBrowserApi<B2BReservationsResponse>('/b2b-reservations/me', {
+    headers: {Authorization: `Bearer ${token}`}
+  });
+}
+
+export async function fetchMyPendingValidations(token: string) {
+  return await fetchBrowserApi<B2BValidationsResponse>('/b2b-validations/me', {
+    headers: {Authorization: `Bearer ${token}`}
+  });
+}
+
+export async function approveB2bValidation(
+  id: string,
+  token: string,
+  commentaire?: string
+) {
+  return await fetchBrowserApi(`/b2b-validations/${id}/approve`, {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${token}`},
+    body: JSON.stringify(
+      commentaire && commentaire.trim() ? {commentaire} : {}
+    )
+  });
+}
+
+export async function rejectB2bValidation(
+  id: string,
+  token: string,
+  commentaire?: string
+) {
+  return await fetchBrowserApi(`/b2b-validations/${id}/reject`, {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${token}`},
+    body: JSON.stringify(
+      commentaire && commentaire.trim() ? {commentaire} : {}
+    )
+  });
+}
+
 export async function fetchAdminNews(
   params?: Record<string, string | number | undefined | null>
 ) {
