@@ -1132,10 +1132,10 @@ export default function B2BReservationFlow({
         id_assurance: assuranceId || undefined
       };
 
-      const result = await createB2bReservation(payload, token);
+      const result: any = await createB2bReservation(payload, token);
 
-      setSubmitSuccess(result.message || t('reservationCreated'));
-      onReservationCreated?.((result as any).reservation || null);
+      setSubmitSuccess(result?.message || t('reservationCreated'));
+      onReservationCreated?.(result?.reservation || null);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : t('genericError'));
     } finally {
