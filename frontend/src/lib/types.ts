@@ -12,6 +12,9 @@ export type Agency = {
   categorie?: string | null;
   latitude?: number | string | null;
   longitude?: number | string | null;
+  is_active?: boolean | null;
+  date_creation?: string | null;
+  date_dern_maj?: string | null;
 };
 
 export type Vehicle = {
@@ -86,6 +89,87 @@ export type ClientProfile = {
   type_client: string | null;
   language_favori?: string | null;
   banned?: boolean | null;
+};
+
+export type AdminProfile = {
+  id_admin: string;
+  mail: string;
+  nom: string | null;
+  prenom: string | null;
+  grade: string | null;
+  date_creation: string | null;
+};
+
+export type AdminLoginResponse = {
+  message: string;
+  access_token: string;
+  admin: AdminProfile;
+};
+
+export type AdminClient = {
+  id_client: string;
+  mail: string | null;
+  nom: string | null;
+  prenom: string | null;
+  date_naissance: string | null;
+  pays: string | null;
+  prefixe_tel: string | null;
+  num_tel: string | null;
+  statut_client: string | null;
+  type_client: string | null;
+  language_favori: string | null;
+  date_creation: string | null;
+  date_dern_maj: string | null;
+  banned: boolean | null;
+};
+
+export type AdminClientsListResponse = {
+  data: AdminClient[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  filters?: {
+    search?: string | null;
+    statut_client?: string | null;
+    type_client?: string | null;
+    language_favori?: string | null;
+    sort_by?: string | null;
+    sort_order?: string | null;
+  };
+};
+
+export type AdminReservation = ReservationRecord & {
+  clients?: AdminClient | null;
+  vehicules?: Vehicle | null;
+  agences_reservations_id_lieu_depToagences?: Agency | null;
+  agences_reservations_id_lieu_retToagences?: Agency | null;
+};
+
+export type AdminReservationsListResponse = {
+  data: AdminReservation[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  filters?: {
+    status?: string | null;
+    search?: string | null;
+    mail?: string | null;
+    include_incomplete?: boolean | null;
+  };
 };
 
 export type LoginResponse = {
@@ -513,4 +597,119 @@ export type Assurance = {
   qualificatif: string;
   avantages: string[];
   prix_jour: number | null;
+};
+
+export type AdminPricing = {
+  id_tarification: string;
+  nom: string | null;
+  description: string | null;
+  qualificatif: string | null;
+  avantages: string[];
+  discount_rate: number | string | null;
+};
+
+export type AdminPricingListResponse = {
+  data: AdminPricing[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  filters?: {
+    search?: string | null;
+    sort_by?: string | null;
+    sort_order?: string | null;
+  };
+};
+
+export type AdminCoupon = {
+  id_coupon: string;
+  code: string | null;
+  type_promo: string | null;
+  valeur_promo: number | string | null;
+  status: string | null;
+  date_creation: string | null;
+  date_fin_validite: string | null;
+  id_admin_createur: string | null;
+  nb_max_utilisation: number | null;
+  count_use: number;
+  admins?: {
+    id_admin: string;
+    nom: string | null;
+    prenom: string | null;
+    mail: string | null;
+  } | null;
+};
+
+export type AdminCouponsListResponse = {
+  data: AdminCoupon[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  filters?: {
+    search?: string | null;
+    status?: string | null;
+    type_promo?: string | null;
+    sort_by?: string | null;
+    sort_order?: string | null;
+  };
+};
+
+export type AdminOption = {
+  id_option: string;
+  nom: string | null;
+  description: string | null;
+  prix_jour: number | string | null;
+  date_creation: string | null;
+};
+
+export type AdminOptionsListResponse = {
+  data: AdminOption[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  filters?: {
+    search?: string | null;
+    sort_by?: string | null;
+    sort_order?: string | null;
+  };
+};
+
+export type AdminInsurance = {
+  id_assurance: string;
+  nom: string | null;
+  description: string | null;
+  qualificatif: string | null;
+  avantages: string[];
+  prix_jour: number | string | null;
+};
+
+export type AdminInsurancesListResponse = {
+  data: AdminInsurance[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  filters?: {
+    search?: string | null;
+    sort_by?: string | null;
+    sort_order?: string | null;
+  };
 };

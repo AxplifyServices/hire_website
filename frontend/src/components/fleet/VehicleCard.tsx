@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {CheckCircle2, Users, Snowflake, Cog} from 'lucide-react';
 import {useTranslations} from 'next-intl';
 import type {Vehicle} from '@/lib/types';
+import { resolveMediaUrl } from '@/lib/api';
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80';
@@ -52,6 +53,8 @@ export default function VehicleCard({
   );
 
   const href = `/${locale}/reservation?${params.toString()}`;
+  const imageUrl =
+    resolveMediaUrl(vehicle.url_image_vehicule) || fallbackImage;
 
   return (
     <Link
@@ -62,7 +65,7 @@ export default function VehicleCard({
     >
       <div className="relative">
         <img
-          src={vehicle.url_image_vehicule || fallbackImage}
+          src={imageUrl}
           alt={title}
           className="h-52 w-full object-cover"
         />

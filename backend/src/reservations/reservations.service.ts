@@ -15,8 +15,9 @@ import { CodesPromoService } from '../codes-promo/codes-promo.service';
 
 @Injectable()
 export class ReservationsService {
-  constructor(private readonly prisma: PrismaService,
-      private readonly codesPromoService: CodesPromoService, // ✅ AJOUT
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly codesPromoService: CodesPromoService,
   ) {}
 
   async getPrefill(user: any) {
@@ -299,37 +300,207 @@ export class ReservationsService {
     };
   }
 
+  async resumeCart(id: string, user: any, session_panier?: string) {
+    const reservation = await this.prisma.reservations.findUnique({
+      where: { id_reservation: id },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Panier introuvable.');
+    }
+
+    this.assertCanAccessReservation(reservation, user, true, session_panier);
+
+    const updated = await this.prisma.reservations.update({
+      where: { id_reservation: id },
+      data: {
+        is_abandoned: false,
+        date_abandon: null,
+        date_derniere_activite: new Date(),
+        date_dern_maj: new Date(),
+        status:
+          reservation.status === 'ABANDONNEE'
+            ? 'PANIER_EN_COURS'
+            : reservation.status,
+      },
+    });
+
+    return {
+      message: 'Panier repris avec succès.',
+      reservation: updated,
+      etape_panier: updated.etape_panier,
+    };
+  }
+
   async findAll(query: ReservationsQueryDto, user: any) {
     if (!this.isAdmin(user)) {
       throw new ForbiddenException('Accès admin requis.');
     }
 
-    const page = Number(query.page ?? 1);
-    const limit = Number(query.limit ?? 20);
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      ...(query.status ? { status: query.status } : {}),
-      ...(query.etape_panier ? { etape_panier: query.etape_panier } : {}),
-      ...(query.id_client ? { id_client: query.id_client } : {}),
-      ...(query.id_vehicule ? { id_vehicule: query.id_vehicule } : {}),
-      ...(query.id_lieu_dep ? { id_lieu_dep: query.id_lieu_dep } : {}),
-      ...(query.is_abandoned !== undefined
-        ? { is_abandoned: query.is_abandoned === 'true' }
-        : {}),
-      ...(query.mail
-        ? {
-            OR: [
-              { mail_snapshot: { contains: query.mail, mode: 'insensitive' } },
-              {
-                clients: {
-                  mail: { contains: query.mail, mode: 'insensitive' },
-                },
+    const includeIncomplete = query.include_incomplete === 'true';
+
+    const visibleStatuses = [
+      'EN_ATTENTE_PAIEMENT',
+      'VALIDEE',
+      'EN_COURS',
+      'TERMINEE',
+      'TERMINE',
+      'ANNULEE',
+      'ANNULÉE',
+    ];
+
+    const and: any[] = [];
+
+    if (query.status) {
+      and.push({ status: query.status });
+    } else if (!includeIncomplete) {
+      and.push({
+        status: {
+          in: visibleStatuses,
+        },
+      });
+    }
+
+    if (query.etape_panier) {
+      and.push({ etape_panier: query.etape_panier });
+    }
+
+    if (query.id_client) {
+      and.push({ id_client: query.id_client });
+    }
+
+    if (query.id_vehicule) {
+      and.push({ id_vehicule: query.id_vehicule });
+    }
+
+    if (query.id_lieu_dep) {
+      and.push({ id_lieu_dep: query.id_lieu_dep });
+    }
+
+    if (query.is_abandoned !== undefined) {
+      and.push({ is_abandoned: query.is_abandoned === 'true' });
+    }
+
+    if (query.date_creation_from || query.date_creation_to) {
+      and.push({
+        date_creation: {
+          ...(query.date_creation_from
+            ? { gte: new Date(`${query.date_creation_from}T00:00:00`) }
+            : {}),
+          ...(query.date_creation_to
+            ? { lte: new Date(`${query.date_creation_to}T23:59:59.999`) }
+            : {}),
+        },
+      });
+    }
+
+    if (query.mail) {
+      and.push({
+        OR: [
+          {
+            mail_snapshot: {
+              contains: query.mail,
+              mode: 'insensitive',
+            },
+          },
+          {
+            clients: {
+              mail: {
+                contains: query.mail,
+                mode: 'insensitive',
               },
-            ],
-          }
-        : {}),
-    };
+            },
+          },
+        ],
+      });
+    }
+
+    if (query.search?.trim()) {
+      const search = query.search.trim();
+
+      and.push({
+        OR: [
+          {
+            id_reservation: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            nom_snapshot: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            prenom_snapshot: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            mail_snapshot: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            clients: {
+              OR: [
+                {
+                  nom: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  prenom: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  mail: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+          },
+          {
+            vehicules: {
+              OR: [
+                {
+                  nom: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  marque: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  model: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }
+
+    const where = and.length ? { AND: and } : {};
 
     const [data, total] = await Promise.all([
       this.prisma.reservations.findMany({
@@ -343,16 +514,35 @@ export class ReservationsService {
           assurances: true,
           tarifications: true,
           politiques_age: true,
+          agences_reservations_id_lieu_depToagences: true,
+          agences_reservations_id_lieu_retToagences: true,
         },
       }),
       this.prisma.reservations.count({ where }),
     ]);
 
+    const total_pages = Math.max(Math.ceil(total / limit), 1);
+
     return {
+      data,
       page,
       limit,
       total,
-      data,
+      total_pages,
+      pagination: {
+        page,
+        limit,
+        total,
+        total_pages,
+        has_next: page < total_pages,
+        has_prev: page > 1,
+      },
+      filters: {
+        status: query.status ?? null,
+        search: query.search ?? null,
+        mail: query.mail ?? null,
+        include_incomplete: includeIncomplete,
+      },
     };
   }
 
@@ -417,49 +607,148 @@ export class ReservationsService {
     return reservation;
   }
 
-  async create(dto: CreateReservationDto, user: any) {
-    const start = this.combineDateAndTime(dto.date_dep, dto.heure_dep);
-    const end = this.combineDateAndTime(dto.date_ret, dto.heure_ret);
-
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      throw new BadRequestException('Dates/heures invalides.');
+  async startReservation(id: string, user: any) {
+    if (!this.isAdmin(user)) {
+      throw new ForbiddenException('Accès admin requis.');
     }
 
-    if (end <= start) {
+    const reservation = await this.getAdminReservationOrThrow(id);
+    const currentStatus = String(reservation.status ?? '').toUpperCase();
+
+    if (!['EN_ATTENTE_PAIEMENT', 'VALIDEE'].includes(currentStatus)) {
       throw new BadRequestException(
-        'La date et heure de retour doivent être après la date et heure de départ.',
+        "Seules les réservations en attente de paiement ou validées peuvent passer à 'EN_COURS'.",
       );
     }
 
-    const lieuDepart = await this.prisma.agences.findUnique({
-      where: { id_agence: dto.id_lieu_dep },
+    const updated = await this.prisma.reservations.update({
+      where: { id_reservation: id },
+      data: {
+        status: 'EN_COURS',
+        payment_status:
+          reservation.payment_status === 'pending'
+            ? 'paid'
+            : reservation.payment_status ?? 'paid',
+        date_dern_maj: new Date(),
+      },
+      include: {
+        clients: true,
+        vehicules: true,
+        assurances: true,
+        tarifications: true,
+        politiques_age: true,
+        agences_reservations_id_lieu_depToagences: true,
+        agences_reservations_id_lieu_retToagences: true,
+      },
     });
 
-    if (!lieuDepart) {
-      throw new NotFoundException('Agence de départ introuvable.');
+    return {
+      message: 'Réservation passée en cours avec succès.',
+      reservation: updated,
+    };
+  }
+
+  async completeReservation(id: string, user: any) {
+    if (!this.isAdmin(user)) {
+      throw new ForbiddenException('Accès admin requis.');
     }
 
-    const lieuRetour = await this.prisma.agences.findUnique({
-      where: { id_agence: dto.id_lieu_ret },
-    });
+    const reservation = await this.getAdminReservationOrThrow(id);
+    const currentStatus = String(reservation.status ?? '').toUpperCase();
 
-    if (!lieuRetour) {
-      throw new NotFoundException('Agence de retour introuvable.');
+    if (currentStatus !== 'EN_COURS') {
+      throw new BadRequestException(
+        "Seules les réservations en cours peuvent être terminées.",
+      );
     }
 
-    const vehicule = await this.prisma.vehicules.findUnique({
-      where: { id_vehicule: dto.id_vehicule },
+    const updated = await this.prisma.reservations.update({
+      where: { id_reservation: id },
+      data: {
+        status: 'TERMINEE',
+        date_dern_maj: new Date(),
+      },
+      include: {
+        clients: true,
+        vehicules: true,
+        assurances: true,
+        tarifications: true,
+        politiques_age: true,
+        agences_reservations_id_lieu_depToagences: true,
+        agences_reservations_id_lieu_retToagences: true,
+      },
     });
 
-    if (!vehicule) {
-      throw new NotFoundException('Véhicule introuvable.');
+    return {
+      message: 'Réservation terminée avec succès.',
+      reservation: updated,
+    };
+  }
+
+  async cancelReservation(id: string, user: any) {
+    if (!this.isAdmin(user)) {
+      throw new ForbiddenException('Accès admin requis.');
+    }
+
+    const reservation = await this.getAdminReservationOrThrow(id);
+    const currentStatus = String(reservation.status ?? '').toUpperCase();
+
+    if (['TERMINEE', 'TERMINE', 'ANNULEE', 'ANNULÉE'].includes(currentStatus)) {
+      throw new BadRequestException(
+        'Cette réservation ne peut plus être annulée.',
+      );
+    }
+
+    const updated = await this.prisma.reservations.update({
+      where: { id_reservation: id },
+      data: {
+        status: 'ANNULEE',
+        payment_status: 'cancelled',
+        date_dern_maj: new Date(),
+      },
+      include: {
+        clients: true,
+        vehicules: true,
+        assurances: true,
+        tarifications: true,
+        politiques_age: true,
+        agences_reservations_id_lieu_depToagences: true,
+        agences_reservations_id_lieu_retToagences: true,
+      },
+    });
+
+    return {
+      message: 'Réservation annulée avec succès.',
+      reservation: updated,
+    };
+  }
+
+  async create(dto: CreateReservationDto, user: any) {
+    if (
+      !dto.id_vehicule ||
+      !dto.date_dep ||
+      !dto.date_ret ||
+      !dto.id_tarification ||
+      !dto.id_politique_age
+    ) {
+      throw new BadRequestException(
+        'Les informations principales de réservation sont obligatoires.',
+      );
+    }
+
+    if (!user?.id_client) {
+      if (!dto.mail || !dto.nom || !dto.prenom) {
+        throw new BadRequestException(
+          'Nom, prénom et email sont obligatoires pour un invité.',
+        );
+      }
     }
 
     const resolvedClient = await this.resolveClient(dto, user);
 
-    const finalPolitiqueAge = await this.resolvePolitiqueAgeForReservation(
+    const politiqueAge = await this.resolvePolitiqueAgeForReservation(
       dto.id_politique_age,
-      resolvedClient.date_naissance,
+      resolvedClient.date_naissance ?? null,
     );
 
     const quote = await this.computeQuote({
@@ -467,7 +756,7 @@ export class ReservationsService {
       date_dep: dto.date_dep,
       date_ret: dto.date_ret,
       id_tarification: dto.id_tarification,
-      id_politique_age: finalPolitiqueAge.id_politic_age,
+      id_politique_age: politiqueAge.id_politic_age,
       id_assurance: dto.id_assurance,
       liste_id_option: dto.liste_id_option ?? [],
     });
@@ -494,35 +783,50 @@ export class ReservationsService {
     const reservation = await this.prisma.reservations.create({
       data: {
         id_reservation: this.generateReservationId(),
-        date_dep: this.toDateOnly(dto.date_dep),
-        date_ret: this.toDateOnly(dto.date_ret),
-        heure_dep: this.toTimeDate(dto.heure_dep),
-        heure_ret: this.toTimeDate(dto.heure_ret),
+        id_client: resolvedClient.id_client,
+
         id_lieu_dep: dto.id_lieu_dep,
         id_lieu_ret: dto.id_lieu_ret,
-        status: 'VALIDEE',
-        id_client: resolvedClient.id_client,
         id_vehicule: dto.id_vehicule,
-        type_conducteur: finalPolitiqueAge.nom,
+
+        date_dep: this.toDateOnly(dto.date_dep),
+        date_ret: this.toDateOnly(dto.date_ret),
+        heure_dep: dto.heure_dep ? this.toTimeDate(dto.heure_dep) : null,
+        heure_ret: dto.heure_ret ? this.toTimeDate(dto.heure_ret) : null,
+
+        status: 'VALIDEE',
+        payment_status: 'paid',
+        source_reservation: user ? 'connected' : 'guest',
+
+        nom_snapshot: resolvedClient.nom ?? dto.nom ?? null,
+        prenom_snapshot: resolvedClient.prenom ?? dto.prenom ?? null,
+        mail_snapshot: resolvedClient.mail ?? dto.mail?.trim().toLowerCase(),
+        prefixe_tel_snapshot:
+          resolvedClient.prefixe_tel ?? dto.prefixe_tel ?? null,
+        num_tel_snapshot: resolvedClient.num_tel ?? dto.num_tel ?? null,
+
+        type_conducteur: 'normal',
         code_promo: dto.code_promo ?? null,
         nb_jour: finalQuote.nb_jour,
         devise: dto.devise ?? 'MAD',
         prix_initial: finalQuote.prix_initial,
         prix_final: finalQuote.prix_final,
-        date_creation: new Date(),
-        date_dern_maj: new Date(),
+
         id_tarification: dto.id_tarification,
         id_assurance: dto.id_assurance ?? null,
         liste_id_option: dto.liste_id_option ?? [],
-        id_politic_age: finalPolitiqueAge.id_politic_age,
+        id_politic_age: politiqueAge.id_politic_age,
+
+        is_abandoned: false,
+        date_creation: new Date(),
+        date_dern_maj: new Date(),
+        date_derniere_activite: new Date(),
       },
       select: {
         id_reservation: true,
-        date_dep: true,
-        date_ret: true,
-        heure_dep: true,
-        heure_ret: true,
         id_lieu_dep: true,
+        date_dep: true,
+        heure_dep: true,
         id_lieu_ret: true,
         status: true,
         id_client: true,
@@ -734,7 +1038,6 @@ export class ReservationsService {
     return age;
   }
 
-
   private async computeQuote(input: {
     id_vehicule: string;
     date_dep: string;
@@ -851,6 +1154,27 @@ export class ReservationsService {
     };
   }
 
+  private async getAdminReservationOrThrow(id: string) {
+    const reservation = await this.prisma.reservations.findUnique({
+      where: { id_reservation: id },
+      include: {
+        clients: true,
+        vehicules: true,
+        assurances: true,
+        tarifications: true,
+        politiques_age: true,
+        agences_reservations_id_lieu_depToagences: true,
+        agences_reservations_id_lieu_retToagences: true,
+      },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Réservation introuvable.');
+    }
+
+    return reservation;
+  }
+
   private combineDateAndTime(dateValue: Date | string, timeValue: string): Date {
     const date =
       dateValue instanceof Date
@@ -963,39 +1287,5 @@ export class ReservationsService {
 
   private generateCartSession() {
     return `cart_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-  }
-  
-  async resumeCart(id: string, user: any, session_panier?: string) {
-  const reservation = await this.prisma.reservations.findUnique({
-    where: { id_reservation: id },
-  });
-
-  if (!reservation) {
-    throw new NotFoundException('Panier introuvable.');
-  }
-
-  // 🔐 sécurité accès
-  this.assertCanAccessReservation(reservation, user, true, session_panier);
-
-  // 🔄 remettre actif
-  const updated = await this.prisma.reservations.update({
-    where: { id_reservation: id },
-    data: {
-      is_abandoned: false,
-      date_abandon: null,
-      date_derniere_activite: new Date(),
-      date_dern_maj: new Date(),
-      status:
-        reservation.status === 'ABANDONNEE'
-          ? 'PANIER_EN_COURS'
-          : reservation.status,
-    },
-  });
-
-  return {
-    message: 'Panier repris avec succès.',
-    reservation: updated,
-    etape_panier: updated.etape_panier,
-  };
   }
 }

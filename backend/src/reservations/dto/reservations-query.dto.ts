@@ -1,4 +1,9 @@
-import { IsBooleanString, IsNumberString, IsOptional, IsString } from 'class-validator';
+import {
+  IsBooleanString,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class ReservationsQueryDto {
   @IsOptional()
@@ -26,8 +31,16 @@ export class ReservationsQueryDto {
   mail?: string;
 
   @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
   @IsBooleanString()
   is_abandoned?: string;
+
+  @IsOptional()
+  @IsBooleanString()
+  include_incomplete?: string;
 
   @IsOptional()
   @IsString()

@@ -15,7 +15,7 @@ psql -U postgres
 
 // Execution d'un script 
 
-psql -U postgres -d hire_db -f "database\schema\2026-04-11_seed_news.sql"
+psql -U postgres -d hire_db -f "database\schema\019_retirer_contrain_reservation.sql"
 
 ** Installer un env
 

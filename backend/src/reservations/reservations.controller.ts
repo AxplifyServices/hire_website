@@ -8,7 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
-  BadRequestException, 
+  BadRequestException,
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { ReservationsQueryDto } from './dto/reservations-query.dto';
@@ -19,26 +19,18 @@ import { AbandonedCartsService } from './abandoned-carts/abandoned-carts.service
 
 @Controller('reservations')
 export class ReservationsController {
-  constructor(private readonly reservationsService: ReservationsService,
-              private readonly abandonedCartsService: AbandonedCartsService,
+  constructor(
+    private readonly reservationsService: ReservationsService,
+    private readonly abandonedCartsService: AbandonedCartsService,
   ) {}
 
-  // =========================
-  // 🔍 GET - Liste filtrée + pagination
-  // =========================
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Query() query: ReservationsQueryDto, @Req() req: any) {
     const user = req.user || null;
-    console.log('REQ.USER /reservations =>', user);
     return this.reservationsService.findAll(query, user);
   }
 
-  // =========================
-  // 👤 GET - Préremplissage checkout
-  // connecté => infos client + politique âge
-  // invité => is_authenticated = false
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Get('prefill')
   async getPrefill(@Req() req: any) {
@@ -46,17 +38,11 @@ export class ReservationsController {
     return this.reservationsService.getPrefill(user);
   }
 
-  // =========================
-  // 💰 POST - Devis réservation
-  // =========================
   @Post('quote')
   async quote(@Body() dto: QuoteDto) {
     return this.reservationsService.quote(dto);
   }
 
-  // =========================
-  // 🙋 GET - Mes réservations
-  // =========================
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async findMine(@Query() query: ReservationsQueryDto, @Req() req: any) {
@@ -64,9 +50,6 @@ export class ReservationsController {
     return this.reservationsService.findMine(query, user);
   }
 
-  // =========================
-  // 🛒 POST - Création panier
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Post()
   async createCart(@Body() dto: any, @Req() req: any) {
@@ -75,8 +58,30 @@ export class ReservationsController {
   }
 
   // =========================
-  // 👁️ GET - Détail réservation / panier
+  // ADMIN ACTIONS
   // =========================
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/admin/start')
+  async startReservation(@Param('id') id: string, @Req() req: any) {
+    const user = req.user || null;
+    return this.reservationsService.startReservation(id, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/admin/complete')
+  async completeReservation(@Param('id') id: string, @Req() req: any) {
+    const user = req.user || null;
+    return this.reservationsService.completeReservation(id, user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/admin/cancel')
+  async cancelReservation(@Param('id') id: string, @Req() req: any) {
+    const user = req.user || null;
+    return this.reservationsService.cancelReservation(id, user);
+  }
+
   @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: any) {
@@ -86,9 +91,6 @@ export class ReservationsController {
     return this.reservationsService.findOne(id, user, session_panier);
   }
 
-  // =========================
-  // ✏️ PATCH - Update panier
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Patch(':id')
   async updateCart(
@@ -102,9 +104,6 @@ export class ReservationsController {
     return this.reservationsService.updateCart(id, dto, user, session_panier);
   }
 
-  // =========================
-  // ✅ Finaliser panier
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Post(':id/finalize')
   async finalizeCart(@Param('id') id: string, @Req() req: any) {
@@ -114,9 +113,6 @@ export class ReservationsController {
     return this.reservationsService.finalizeCart(id, user, session_panier);
   }
 
-  // =========================
-  // ❌ Abandon panier
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Post(':id/abandon')
   async abandonCart(@Param('id') id: string, @Req() req: any) {
@@ -126,9 +122,6 @@ export class ReservationsController {
     return this.reservationsService.abandonCart(id, user, session_panier);
   }
 
-  // =========================
-  // 🔄 Reprendre panier abandonné
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Post(':id/resume')
   async resumeCart(@Param('id') id: string, @Req() req: any) {
@@ -138,9 +131,6 @@ export class ReservationsController {
     return this.reservationsService.resumeCart(id, user, session_panier);
   }
 
-  // =========================
-  // 🔗 Générer lien de reprise panier
-  // =========================
   @UseGuards(OptionalJwtAuthGuard)
   @Get(':id/recovery-link')
   async getRecoveryLink(@Param('id') id: string, @Req() req: any) {

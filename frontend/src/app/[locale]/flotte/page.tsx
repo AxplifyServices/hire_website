@@ -106,7 +106,9 @@ export default async function FleetPage({
   } else {
     const response = await fetchVehiclesList({
       page: currentPage,
-      limit
+      limit,
+      status_vehicule: 'Actif',
+      disponibilite: 'Disponible'
     });
 
     vehicles = response.data;

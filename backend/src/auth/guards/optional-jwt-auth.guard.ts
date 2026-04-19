@@ -8,10 +8,8 @@ export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
   }
 
   handleRequest(err: any, user: any) {
-    if (err) {
-      throw err;
-    }
-
+    // Sur les routes "optionnelles", on ne bloque jamais le flux public.
+    // Si le token est invalide/expiré, on continue simplement en invité.
     return user ?? null;
   }
 }

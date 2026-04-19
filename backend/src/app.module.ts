@@ -17,6 +17,7 @@ import { CollaborateursModule } from './collaborateurs/collaborateurs.module';
 import { B2bCoreModule } from './b2b-core/b2b-core.module';
 import { B2bReservationsModule } from './b2b-reservations/b2b-reservations.module';
 import { NewsModule } from './news/news.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { NewsModule } from './news/news.module';
     B2bCoreModule,
     B2bReservationsModule,
     NewsModule,
+    ClientsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
