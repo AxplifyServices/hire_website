@@ -57,10 +57,10 @@ const sections: NavSection[] = [
   {
     title: 'Exploitation B2B',
     items: [
-      {label: 'Réservations B2B', href: '/admin/b2b/reservations', icon: ClipboardList},
+      {label: 'Réservations B2B', href: '/admin/b2b/b2b-reservations', icon: ClipboardList},
       {label: 'Entreprises', href: '/admin/b2b/companies', icon: Building2},
       {label: 'Collaborateurs', href: '/admin/b2b/collaborators', icon: Users},
-      {label: 'Profils bénéficiaires', href: '/admin/b2b/beneficiaries', icon: BadgeIcon},
+      {label: 'Profils bénéficiaires', href: '/admin/b2b/beneficiary-profiles', icon: BadgeIcon},
       {label: 'Centres de coût', href: '/admin/b2b/cost-centers', icon: Wallet}
     ]
   },

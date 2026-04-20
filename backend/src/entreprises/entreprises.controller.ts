@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -11,6 +13,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { EntreprisesService } from './entreprises.service';
 import { CreateEntrepriseDto } from './dto/create-entreprise.dto';
+import { UpdateEntrepriseDto } from './dto/update-entreprise.dto';
 import { CreateCollaborateurDto } from './dto/create-collaborateur.dto';
 import { CreateCentreCoutDto } from './dto/create-centre-cout.dto';
 import { CreateProfilBeneficiaireDto } from './dto/create-profil-beneficiaire.dto';
@@ -19,6 +22,17 @@ import { CreateProfilBeneficiaireDto } from './dto/create-profil-beneficiaire.dt
 @Controller('entreprises')
 export class EntreprisesController {
   constructor(private readonly entreprisesService: EntreprisesService) {}
+
+  @Get()
+  findAll(@Req() req: any) {
+    if (req.user?.role !== 'admin') {
+      throw new ForbiddenException(
+        'Seul un administrateur peut consulter la liste des entreprises.',
+      );
+    }
+
+    return this.entreprisesService.findAll();
+  }
 
   @Post()
   createEntreprise(@Body() dto: CreateEntrepriseDto, @Req() req: any) {
@@ -29,6 +43,35 @@ export class EntreprisesController {
     }
 
     return this.entreprisesService.createEntreprise(dto);
+  }
+
+  @Patch(':id_entreprise')
+  updateEntreprise(
+    @Param('id_entreprise') id_entreprise: string,
+    @Body() dto: UpdateEntrepriseDto,
+    @Req() req: any,
+  ) {
+    if (req.user?.role !== 'admin') {
+      throw new ForbiddenException(
+        'Seul un administrateur peut modifier une entreprise.',
+      );
+    }
+
+    return this.entreprisesService.updateEntreprise(id_entreprise, dto);
+  }
+
+  @Delete(':id_entreprise')
+  removeEntreprise(
+    @Param('id_entreprise') id_entreprise: string,
+    @Req() req: any,
+  ) {
+    if (req.user?.role !== 'admin') {
+      throw new ForbiddenException(
+        'Seul un administrateur peut supprimer une entreprise.',
+      );
+    }
+
+    return this.entreprisesService.removeEntreprise(id_entreprise);
   }
 
   @Post(':id_entreprise/centres-cout')

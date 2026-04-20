@@ -22,11 +22,11 @@ const pageTitles: Record<string, string> = {
   '/admin/faq': 'FAQ',
   '/admin/crm': 'Emails / CRM',
   '/admin/b2b/dashboard': 'Dashboard B2B',
-  '/admin/b2b-reservations': 'Réservations B2B',
-  '/admin/companies': 'Entreprises',
-  '/admin/collaborators': 'Collaborateurs',
-  '/admin/beneficiary-profiles': 'Profils bénéficiaires',
-  '/admin/cost-centers': 'Centres de coût',
+  '/admin/b2b/b2b-reservations': 'Réservations B2B',
+  '/admin/b2b/companies': 'Entreprises',
+  '/admin/b2b/collaborators': 'Collaborateurs',
+  '/admin/b2b/beneficiary-profiles': 'Profils bénéficiaires',
+  '/admin/b2b/cost-centers': 'Centres de coût',
 };
 
 export default function AdminTopbar() {

@@ -287,6 +287,7 @@ export class B2bReservationsService {
       };
     }
 
+    
     const reservations = await this.prisma.reservations_entreprises.findMany({
       where: {
         OR: [
@@ -334,6 +335,46 @@ export class B2bReservationsService {
       meta: {
         total: data.length,
         memberships_count: memberships.length,
+      },
+    };
+  }
+
+  async findAdmin(query: B2bReservationsQueryDto, user: any) {
+    if (!this.isAdmin(user)) {
+      throw new BadRequestException('Accès admin requis.');
+    }
+
+    const reservations = await this.prisma.reservations_entreprises.findMany({
+      where: {
+        statut_reservation: query.statut_reservation ?? undefined,
+        statut_validation: query.statut_validation ?? undefined,
+        id_entreprise: query.id_entreprise ?? undefined,
+      },
+      orderBy: {
+        date_creation: query.sort_date_creation ?? 'desc',
+      },
+      include: {
+        entreprises: true,
+        vehicules: true,
+        centres_cout: true,
+        profils_beneficiaires: true,
+        clients_entreprises_reservations_entreprises_id_client_entreprise_demandeurToclients_entreprises: {
+          include: {
+            clients: true,
+          },
+        },
+        clients_entreprises_reservations_entreprises_id_client_entreprise_beneficiaireToclients_entreprises: {
+          include: {
+            clients: true,
+          },
+        },
+      },
+    });
+
+    return {
+      data: reservations,
+      meta: {
+        total: reservations.length,
       },
     };
   }
@@ -422,7 +463,7 @@ export class B2bReservationsService {
     return this.validationEngine.reject(id, user, commentaire);
   }
 
-  async confirmPickup(id: string, user: any) {
+  async startReservation(id: string, user: any) {
     if (!this.isAdmin(user)) {
       throw new BadRequestException('Accès admin requis.');
     }
@@ -435,9 +476,9 @@ export class B2bReservationsService {
       throw new NotFoundException('Réservation entreprise introuvable.');
     }
 
-    if (reservation.statut_reservation !== 'validee') {
+    if (!['validee', 'confirmee'].includes(reservation.statut_reservation)) {
       throw new BadRequestException(
-        'Seule une réservation validée peut être confirmée en prise véhicule.',
+        'Seule une réservation validée peut être mise en cours.',
       );
     }
 
@@ -450,12 +491,12 @@ export class B2bReservationsService {
     });
 
     return {
-      message: 'Prise du véhicule confirmée avec succès.',
+      message: 'Réservation entreprise passée en cours avec succès.',
       reservation: updated,
     };
   }
 
-  async confirmReturn(id: string, user: any) {
+  async completeReservation(id: string, user: any) {
     if (!this.isAdmin(user)) {
       throw new BadRequestException('Accès admin requis.');
     }
@@ -468,13 +509,9 @@ export class B2bReservationsService {
       throw new NotFoundException('Réservation entreprise introuvable.');
     }
 
-    if (
-      !['validee', 'confirmee', 'en_cours'].includes(
-        reservation.statut_reservation,
-      )
-    ) {
+    if (!['en_cours', 'confirmee', 'validee'].includes(reservation.statut_reservation)) {
       throw new BadRequestException(
-        'Seule une réservation active peut être clôturée.',
+        'Seule une réservation active peut être terminée.',
       );
     }
 
@@ -487,7 +524,40 @@ export class B2bReservationsService {
     });
 
     return {
-      message: 'Retour du véhicule confirmé avec succès.',
+      message: 'Réservation entreprise terminée avec succès.',
+      reservation: updated,
+    };
+  }
+
+    async cancelReservation(id: string, user: any) {
+    if (!this.isAdmin(user)) {
+      throw new BadRequestException('Accès admin requis.');
+    }
+
+    const reservation = await this.prisma.reservations_entreprises.findUnique({
+      where: { id_reservation_entreprise: id },
+    });
+
+    if (!reservation) {
+      throw new NotFoundException('Réservation entreprise introuvable.');
+    }
+
+    if (['terminee', 'annulee'].includes(reservation.statut_reservation)) {
+      throw new BadRequestException(
+        'Cette réservation entreprise ne peut plus être annulée.',
+      );
+    }
+
+    const updated = await this.prisma.reservations_entreprises.update({
+      where: { id_reservation_entreprise: id },
+      data: {
+        statut_reservation: 'annulee',
+        date_dern_maj: new Date(),
+      },
+    });
+
+    return {
+      message: 'Réservation entreprise annulée avec succès.',
       reservation: updated,
     };
   }

@@ -38,6 +38,11 @@ export class B2bReservationsController {
     return this.b2bReservationsService.findMine(query, req.user);
   }
 
+  @Get('admin/b2b-reservations')
+  findAdmin(@Query() query: B2bReservationsQueryDto, @Req() req: any) {
+    return this.b2bReservationsService.findAdmin(query, req.user);
+  }
+
   @Get('b2b-validations/me')
   findValidationsForMe(@Req() req: any) {
     return this.b2bReservationsService.findValidationsForMe(req.user);
@@ -69,13 +74,18 @@ export class B2bReservationsController {
     );
   }
 
-  @Post('admin/b2b-reservations/:id/confirm-pickup')
-  confirmPickup(@Param('id') id: string, @Req() req: any) {
-    return this.b2bReservationsService.confirmPickup(id, req.user);
+  @Post('admin/b2b-reservations/:id/start')
+  start(@Param('id') id: string, @Req() req: any) {
+    return this.b2bReservationsService.startReservation(id, req.user);
   }
 
-  @Post('admin/b2b-reservations/:id/confirm-return')
-  confirmReturn(@Param('id') id: string, @Req() req: any) {
-    return this.b2bReservationsService.confirmReturn(id, req.user);
+  @Post('admin/b2b-reservations/:id/complete')
+  complete(@Param('id') id: string, @Req() req: any) {
+    return this.b2bReservationsService.completeReservation(id, req.user);
+  }
+
+  @Post('admin/b2b-reservations/:id/cancel')
+  cancel(@Param('id') id: string, @Req() req: any) {
+    return this.b2bReservationsService.cancelReservation(id, req.user);
   }
 }

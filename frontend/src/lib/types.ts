@@ -345,15 +345,25 @@ export type B2BEntreprise = {
   id_entreprise: string;
   raison_sociale: string | null;
   slug: string | null;
+  email_contact?: string | null;
+  tel_contact?: string | null;
   statut: string | null;
   devise: string | null;
   mode_validation_defaut: string | null;
+  date_creation?: string | null;
+  date_dern_maj?: string | null;
 };
+
+export type AdminB2BCompaniesListResponse = B2BEntreprise[];
 
 export type B2BCentreCout = {
   id_centre_cout: string;
+  id_entreprise?: string | null;
   code: string | null;
   libelle: string | null;
+  actif?: boolean | null;
+  date_creation?: string | null;
+  date_dern_maj?: string | null;
 };
 
 export type B2BProfilBeneficiaire = {
@@ -369,6 +379,8 @@ export type B2BProfilBeneficiaire = {
   sans_chauffeur_autorise: boolean | null;
   actif: boolean | null;
   liste_type_autorise: string[];
+  date_creation?: string | null;
+  date_dern_maj?: string | null;
 };
 
 export type B2BMembership = {
@@ -553,6 +565,42 @@ export type B2BReservationRecord = {
   latest_validation_status?: string | null;
 };
 
+export type AdminB2BReservation = {
+  id_reservation_entreprise: string;
+  id_entreprise: string | null;
+  id_client_entreprise_demandeur: string | null;
+  id_client_entreprise_beneficiaire: string | null;
+  id_centre_cout: string | null;
+  id_profil_beneficiaire: string | null;
+  id_vehicule: string | null;
+  date_dep: string | null;
+  date_ret: string | null;
+  heure_dep: string | null;
+  heure_ret: string | null;
+  cout_estime: number | null;
+  cout_final: number | null;
+  quota_jours_consomme: number | null;
+  quota_budget_consomme: number | null;
+  statut_reservation: string | null;
+  statut_validation: string | null;
+  type_validation: string | null;
+  date_creation: string | null;
+  date_dern_maj: string | null;
+  vehicules?: Vehicle | null;
+  entreprises?: B2BEntreprise | null;
+  centres_cout?: B2BCentreCout | null;
+  profils_beneficiaires?: B2BProfilBeneficiaire | null;
+  clients_entreprises_reservations_entreprises_id_client_entreprise_demandeurToclients_entreprises?: B2BCollaborateur | null;
+  clients_entreprises_reservations_entreprises_id_client_entreprise_beneficiaireToclients_entreprises?: B2BCollaborateur | null;
+};
+
+export type AdminB2BReservationsListResponse = {
+  data: AdminB2BReservation[];
+  meta: {
+    total: number;
+  };
+};
+
 export type B2BCollaborateur = {
   id_client_entreprise: string;
   id_client: string;
@@ -570,6 +618,11 @@ export type B2BCollaborateur = {
     nom: string | null;
     prenom: string | null;
     mail: string | null;
+    pays?: string | null;
+    prefixe_tel?: string | null;
+    num_tel?: string | null;
+    date_naissance?: string | null;
+    language_favori?: string | null;
   } | null;
   centres_cout: B2BCentreCout | null;
   profils_beneficiaires: B2BProfilBeneficiaire | null;

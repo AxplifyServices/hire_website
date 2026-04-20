@@ -18,6 +18,8 @@ import { B2bCoreModule } from './b2b-core/b2b-core.module';
 import { B2bReservationsModule } from './b2b-reservations/b2b-reservations.module';
 import { NewsModule } from './news/news.module';
 import { ClientsModule } from './clients/clients.module';
+import { ProfilsBeneficiairesModule } from './profils-beneficiaires/profils-beneficiaires.module';
+import { CentresCoutModule } from './centres-cout/centres-cout.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { ClientsModule } from './clients/clients.module';
     B2bReservationsModule,
     NewsModule,
     ClientsModule,
+    ProfilsBeneficiairesModule,
+    CentresCoutModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -36,6 +36,10 @@ import type {
   AdminInsurancesListResponse,
   AdminPricing,
   AdminPricingListResponse,
+  B2BEntreprise,
+  AdminB2BCompaniesListResponse,
+  AdminB2BReservation,
+  AdminB2BReservationsListResponse,
 } from '@/lib/types';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:3000';
@@ -667,6 +671,187 @@ export async function rejectB2bValidation(
   });
 }
 
+export async function fetchAdminB2BCompanies() {
+  return await fetchAdminApi<AdminB2BCompaniesListResponse>('/entreprises');
+}
+
+export async function createAdminB2BCompany(payload: {
+  raison_sociale: string;
+  slug: string;
+  email_contact?: string;
+  tel_contact?: string;
+  statut?: string;
+  mode_validation_defaut?: string;
+  devise?: string;
+}) {
+  return await fetchAdminApi<{message: string; entreprise: B2BEntreprise}>(
+    '/entreprises',
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function updateAdminB2BCompany(
+  id: string,
+  payload: Partial<{
+    raison_sociale: string;
+    slug: string;
+    email_contact?: string;
+    tel_contact?: string;
+    statut?: string;
+    mode_validation_defaut?: string;
+    devise?: string;
+  }>
+) {
+  return await fetchAdminApi<{message: string; entreprise: B2BEntreprise}>(
+    `/entreprises/${id}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function deleteAdminB2BCompany(id: string) {
+  return await fetchAdminApi<{message: string; id_entreprise: string}>(
+    `/entreprises/${id}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+export async function fetchAdminB2BCentresCout(entrepriseId: string) {
+  return await fetchAdminApi<B2BCentreCout[]>(
+    `/entreprises/${entrepriseId}/centres-cout`
+  );
+}
+
+export async function createAdminB2BCentreCout(
+  entrepriseId: string,
+  payload: {
+    code: string;
+    libelle: string;
+    actif?: boolean;
+  }
+) {
+  return await fetchAdminApi<{message: string; centre_cout: B2BCentreCout}>(
+    `/entreprises/${entrepriseId}/centres-cout`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function updateAdminB2BCentreCout(
+  idCentreCout: string,
+  payload: Partial<{
+    code: string;
+    libelle: string;
+    actif?: boolean;
+  }>
+) {
+  return await fetchAdminApi<{message: string; centre_cout: B2BCentreCout}>(
+    `/centres-cout/${idCentreCout}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function deleteAdminB2BCentreCout(idCentreCout: string) {
+  return await fetchAdminApi<{message: string; id_centre_cout: string}>(
+    `/centres-cout/${idCentreCout}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+export async function fetchAdminB2BProfilsBeneficiaires(entrepriseId: string) {
+  return await fetchAdminApi<B2BProfilBeneficiaire[]>(
+    `/entreprises/${entrepriseId}/profils-beneficiaires`
+  );
+}
+
+export async function fetchAdminB2BCollaborateurs(entrepriseId: string) {
+  return await fetchAdminApi<B2BCollaborateur[]>(
+    `/entreprises/${entrepriseId}/collaborateurs`
+  );
+}
+
+export async function createAdminB2BCollaborateur(
+  entrepriseId: string,
+  payload: {
+    nom: string;
+    prenom: string;
+    mail: string;
+    password: string;
+    pays?: string;
+    prefixe_tel?: string;
+    num_tel?: string;
+    date_naissance?: string;
+    language_favori?: string;
+    id_centre_cout?: string;
+    id_profil_beneficiaire?: string;
+    role_entreprise: string;
+    matricule?: string;
+    validateur?: string;
+    manager_id_client_entreprise?: string;
+  }
+) {
+  return await fetchAdminApi<{message: string; collaborateur: B2BCollaborateur}>(
+    `/entreprises/${entrepriseId}/collaborateurs`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function updateAdminB2BCollaborateur(
+  idClientEntreprise: string,
+  payload: Partial<{
+    nom: string;
+    prenom: string;
+    mail: string;
+    password?: string;
+    pays?: string;
+    prefixe_tel?: string;
+    num_tel?: string;
+    date_naissance?: string;
+    language_favori?: string;
+    id_centre_cout?: string | null;
+    id_profil_beneficiaire?: string | null;
+    role_entreprise?: string;
+    matricule?: string;
+    validateur?: string;
+    manager_id_client_entreprise?: string | null;
+    actif?: boolean;
+  }>
+) {
+  return await fetchAdminApi<{message: string; collaborateur: B2BCollaborateur}>(
+    `/collaborateurs/${idClientEntreprise}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function deleteAdminB2BCollaborateur(idClientEntreprise: string) {
+  return await fetchAdminApi<{message: string; id_client_entreprise: string}>(
+    `/collaborateurs/${idClientEntreprise}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
 export async function fetchAdminNews(
   params?: Record<string, string | number | undefined | null>
 ) {
@@ -938,6 +1123,100 @@ export async function deleteAdminPricing(id: string) {
     `/tarifications/${id}`,
     {
       method: 'DELETE'
+    }
+  );
+}
+
+export async function createAdminB2BProfilBeneficiaire(
+  entrepriseId: string,
+  payload: {
+    code: string;
+    libelle: string;
+    description?: string;
+    validation_requise?: boolean;
+    budget_plafond_mensuel?: number;
+    nb_jours_mois?: number;
+    nb_reservations_simultanees?: number;
+    avec_chauffeur_autorise?: boolean;
+    sans_chauffeur_autorise?: boolean;
+    liste_type_autorise?: string[];
+    actif?: boolean;
+  }
+) {
+  return await fetchAdminApi<{message: string; profil_beneficiaire: B2BProfilBeneficiaire}>(
+    `/entreprises/${entrepriseId}/profils-beneficiaires`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function updateAdminB2BProfilBeneficiaire(
+  idProfilBeneficiaire: string,
+  payload: Partial<{
+    code: string;
+    libelle: string;
+    description?: string | null;
+    validation_requise?: boolean;
+    budget_plafond_mensuel?: number | null;
+    nb_jours_mois?: number | null;
+    nb_reservations_simultanees?: number | null;
+    avec_chauffeur_autorise?: boolean;
+    sans_chauffeur_autorise?: boolean;
+    liste_type_autorise?: string[];
+    actif?: boolean;
+  }>
+) {
+  return await fetchAdminApi<{message: string; profil_beneficiaire: B2BProfilBeneficiaire}>(
+    `/profils-beneficiaires/${idProfilBeneficiaire}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }
+  );
+}
+
+export async function deleteAdminB2BProfilBeneficiaire(idProfilBeneficiaire: string) {
+  return await fetchAdminApi<{message: string; id_profil_beneficiaire: string}>(
+    `/profils-beneficiaires/${idProfilBeneficiaire}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+export async function fetchAdminB2BReservations(
+  params?: Record<string, string | number | undefined | null>
+) {
+  return await fetchAdminApi<AdminB2BReservationsListResponse>(
+    `/admin/b2b-reservations${buildQuery(params)}`
+  );
+}
+
+export async function adminStartB2BReservation(id: string) {
+  return await fetchAdminApi<{message: string; reservation: AdminB2BReservation}>(
+    `/admin/b2b-reservations/${id}/start`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+export async function adminCompleteB2BReservation(id: string) {
+  return await fetchAdminApi<{message: string; reservation: AdminB2BReservation}>(
+    `/admin/b2b-reservations/${id}/complete`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+export async function adminCancelB2BReservation(id: string) {
+  return await fetchAdminApi<{message: string; reservation: AdminB2BReservation}>(
+    `/admin/b2b-reservations/${id}/cancel`,
+    {
+      method: 'POST',
     }
   );
 }

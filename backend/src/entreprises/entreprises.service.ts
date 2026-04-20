@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEntrepriseDto } from './dto/create-entreprise.dto';
+import { UpdateEntrepriseDto } from './dto/update-entreprise.dto';
 import { CreateCollaborateurDto } from './dto/create-collaborateur.dto';
 import * as bcrypt from 'bcrypt';
 import { CreateCentreCoutDto } from './dto/create-centre-cout.dto';
@@ -14,6 +15,24 @@ import { CreateProfilBeneficiaireDto } from './dto/create-profil-beneficiaire.dt
 @Injectable()
 export class EntreprisesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.entreprises.findMany({
+      orderBy: [{ raison_sociale: 'asc' }, { id_entreprise: 'asc' }],
+      select: {
+        id_entreprise: true,
+        raison_sociale: true,
+        slug: true,
+        email_contact: true,
+        tel_contact: true,
+        statut: true,
+        mode_validation_defaut: true,
+        devise: true,
+        date_creation: true,
+        date_dern_maj: true,
+      },
+    });
+  }
 
   async createEntreprise(dto: CreateEntrepriseDto) {
     const raison_sociale = dto.raison_sociale.trim();
@@ -73,6 +92,148 @@ export class EntreprisesService {
       entreprise,
     };
   }
+
+  async updateEntreprise(id_entreprise: string, dto: UpdateEntrepriseDto) {
+    const existing = await this.prisma.entreprises.findUnique({
+      where: { id_entreprise },
+      select: {
+        id_entreprise: true,
+        raison_sociale: true,
+        slug: true,
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Entreprise introuvable.');
+    }
+
+    const raison_sociale =
+      dto.raison_sociale !== undefined ? dto.raison_sociale.trim() : undefined;
+
+    const slug =
+      dto.slug !== undefined ? dto.slug.trim().toLowerCase() : undefined;
+
+    const email_contact =
+      dto.email_contact !== undefined
+        ? dto.email_contact?.trim().toLowerCase() || null
+        : undefined;
+
+    const tel_contact =
+      dto.tel_contact !== undefined ? dto.tel_contact?.trim() || null : undefined;
+
+    if (raison_sociale && raison_sociale !== existing.raison_sociale) {
+      const duplicateRaisonSociale = await this.prisma.entreprises.findFirst({
+        where: {
+          raison_sociale,
+          id_entreprise: { not: id_entreprise },
+        },
+        select: { id_entreprise: true },
+      });
+
+      if (duplicateRaisonSociale) {
+        throw new ConflictException(
+          'Une entreprise existe déjà avec cette raison sociale.',
+        );
+      }
+    }
+
+    if (slug && slug !== existing.slug) {
+      const duplicateSlug = await this.prisma.entreprises.findFirst({
+        where: {
+          slug,
+          id_entreprise: { not: id_entreprise },
+        },
+        select: { id_entreprise: true },
+      });
+
+      if (duplicateSlug) {
+        throw new ConflictException('Une entreprise existe déjà avec ce slug.');
+      }
+    }
+
+    const entreprise = await this.prisma.entreprises.update({
+      where: { id_entreprise },
+      data: {
+        ...(raison_sociale !== undefined ? { raison_sociale } : {}),
+        ...(slug !== undefined ? { slug } : {}),
+        ...(email_contact !== undefined ? { email_contact } : {}),
+        ...(tel_contact !== undefined ? { tel_contact } : {}),
+        ...(dto.statut !== undefined ? { statut: dto.statut } : {}),
+        ...(dto.mode_validation_defaut !== undefined
+          ? { mode_validation_defaut: dto.mode_validation_defaut }
+          : {}),
+        ...(dto.devise !== undefined ? { devise: dto.devise } : {}),
+        date_dern_maj: new Date(),
+      },
+      select: {
+        id_entreprise: true,
+        raison_sociale: true,
+        slug: true,
+        email_contact: true,
+        tel_contact: true,
+        statut: true,
+        mode_validation_defaut: true,
+        devise: true,
+        date_creation: true,
+        date_dern_maj: true,
+      },
+    });
+
+    return {
+      message: 'Entreprise modifiée avec succès.',
+      entreprise,
+    };
+  }
+
+  async removeEntreprise(id_entreprise: string) {
+    const existing = await this.prisma.entreprises.findUnique({
+      where: { id_entreprise },
+      select: {
+        id_entreprise: true,
+        raison_sociale: true,
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Entreprise introuvable.');
+    }
+
+    const [
+      centresCoutCount,
+      profilsCount,
+      collaborateursCount,
+      reservationsCount,
+      validationsCount,
+    ] = await Promise.all([
+      this.prisma.centres_cout.count({ where: { id_entreprise } }),
+      this.prisma.profils_beneficiaires.count({ where: { id_entreprise } }),
+      this.prisma.clients_entreprises.count({ where: { id_entreprise } }),
+      this.prisma.reservations_entreprises.count({ where: { id_entreprise } }),
+      this.prisma.demandes_validation.count({ where: { id_entreprise } }),
+    ]);
+
+    const hasDependencies =
+      centresCoutCount > 0 ||
+      profilsCount > 0 ||
+      collaborateursCount > 0 ||
+      reservationsCount > 0 ||
+      validationsCount > 0;
+
+    if (hasDependencies) {
+      throw new BadRequestException(
+        'Impossible de supprimer cette entreprise car elle est déjà liée à des centres de coût, profils, collaborateurs, réservations ou validations.',
+      );
+    }
+
+    await this.prisma.entreprises.delete({
+      where: { id_entreprise },
+    });
+
+    return {
+      message: 'Entreprise supprimée avec succès.',
+      id_entreprise,
+    };
+  }  
 
   async createCentreCout(id_entreprise: string, dto: CreateCentreCoutDto) {
     const entreprise = await this.prisma.entreprises.findUnique({
@@ -276,21 +437,20 @@ export class EntreprisesService {
     }
 
     if (dto.validateur === 'autre') {
-      const manager = await this.prisma.clients_entreprises.findFirst({
+      const validateur = await this.prisma.clients_entreprises.findFirst({
         where: {
           id_client_entreprise: dto.manager_id_client_entreprise,
           id_entreprise,
           actif: true,
-          role_entreprise: 'manager',
         },
         select: {
           id_client_entreprise: true,
         },
       });
 
-      if (!manager) {
+      if (!validateur) {
         throw new BadRequestException(
-          'Le valideur sélectionné doit être un manager actif de la même entreprise.',
+          'Le valideur sélectionné doit être un collaborateur actif de la même entreprise.',
         );
       }
     }
@@ -323,7 +483,7 @@ export class EntreprisesService {
           num_tel: dto.num_tel ?? null,
           statut_client: 'Actif',
           type_client: 'Entreprise',
-          language_favori: dto.language_favori ?? 'FR',
+          language_favori: (dto.language_favori ?? 'FR').toUpperCase(),
           date_creation: now,
           date_dern_maj: now,
           banned: false,
@@ -406,31 +566,11 @@ export class EntreprisesService {
   }
 
   async findCollaborateurs(id_entreprise: string, user: any) {
-    if (!user?.id_client) {
-      throw new NotFoundException('Utilisateur introuvable.');
-    }
-
-    const membership = await this.prisma.clients_entreprises.findFirst({
-      where: {
-        id_client: user.id_client,
-        id_entreprise,
-        actif: true,
-      },
-      select: {
-        id_client_entreprise: true,
-      },
-    });
-
-    if (!membership) {
-      throw new BadRequestException(
-        'Vous n’êtes pas autorisé à consulter les collaborateurs de cette entreprise.',
-      );
-    }
+    await this.assertCanAccessEntreprise(id_entreprise, user);
 
     return this.prisma.clients_entreprises.findMany({
       where: {
         id_entreprise,
-        actif: true,
       },
       orderBy: [
         { role_entreprise: 'asc' },
@@ -454,6 +594,11 @@ export class EntreprisesService {
             nom: true,
             prenom: true,
             mail: true,
+            pays: true,
+            prefixe_tel: true,
+            num_tel: true,
+            date_naissance: true,
+            language_favori: true,
           },
         },
         centres_cout: {
@@ -476,6 +621,7 @@ export class EntreprisesService {
             avec_chauffeur_autorise: true,
             sans_chauffeur_autorise: true,
             actif: true,
+            liste_type_autorise: true,
           },
         },
       },
